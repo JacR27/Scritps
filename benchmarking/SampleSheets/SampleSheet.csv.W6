@@ -1,0 +1,10 @@
+[Header],,,
+Investigator Name,kho
+benchmarking,TNworker_BCL_test
+Date,2/10/2014
+Workflow,TumorNormal
+[Settings]
+[Data]
+Sample_ID,Sample_Name,MatchedNormalID,GenomeFolder,RunFolder,Lane
+Normal1,ATCC2363,,Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta,/mnt/141128_HSX177_0082_BH00UABBXX/FASTQs/H00UABBXX/,4
+Tumor1,ATCC2343,Normal1,Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta,/mnt/141128_HSX177_0082_BH00UABBXX/FASTQs/H00UABBXX/,1+2+3

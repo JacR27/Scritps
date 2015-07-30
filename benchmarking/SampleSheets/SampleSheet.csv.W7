@@ -1,0 +1,15 @@
+[Header],,,,,,
+Date, 06/05/2014,,,,,
+Workflow, Resequencing,,,,,
+[Settings],,,,,,
+FastqInput,1,
+ExcludeTilesLane1,1101-2224,
+ExcludeTilesLane2,1101-2224,
+ExcludeTilesLane3,1101-2224,
+ExcludeTilesLane5,1101-2224,
+ExcludeTilesLane6,1101-2224,
+ExcludeTilesLane7,1101-2224,
+ExcludeTilesLane8,1101-2224
+[Data],,,,,,
+SampleID,SampleName, GenomeFolder, RunFolder, Lanes, Index, Index2
+12878_E6, 12878_E6, Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta, /mnt/141128_HSX177_0082_BH00UABBXX/,4,,

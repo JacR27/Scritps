@@ -1,0 +1,11 @@
+#!/bin/bash
+#safe rm, achuall moves files to ~/.RB
+#not the best for moveing big files that are one differend partitions
+
+echo "Moving files to $HOME/.RB"
+for x
+do
+	mv $x $HOME/.RB
+done
+
+exit

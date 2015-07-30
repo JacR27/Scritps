@@ -1,0 +1,20 @@
+[Header]
+Investigator Name,kho
+Project Name,TNworker_BCL_test
+Date,2/10/2014
+Workflow,TumorNormal
+[Reads]
+151
+151
+[Settings]
+Aligner,isaac
+VariantCaller,starling2
+TranscriptSource,refseq
+
+[Data]
+Sample_ID,Sample_Name,GenomeFolder,Lane,MatchedNormalID,RunFolder
+HCC2218C,ATCC2343_X_V1,Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta,1+2+3,HCC2218BL,/mnt/141128_HSX177_0082_BH00UABBXX/
+HCC2218BL,ATCC2363_X_V1,Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta,4,,/mnt/141128_HSX177_0082_BH00UABBXX/
+HCC1187C,ATCC2322_X_V1,Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta,5+6+7,HCC1187BL,/mnt/141128_HSX177_0082_BH00UABBXX/
+HCC1187BL,ATCC2323_X_V1,Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta,8,,/mnt/141128_HSX177_0082_BH00UABBXX/
+
