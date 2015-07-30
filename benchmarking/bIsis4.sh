@@ -7,7 +7,7 @@ processName=${system}${workflow}${run}
 workingdir=./
 analysisdir=${workingdir}/runs/$processName/
 command=/illumina/development/Isis/2.6.17.11.NorthStar/Isis
-sampleSheetdir=~/scritps/bencmarking/SampleSheets/
+sampleSheetdir=~/scripts/benchmarking/SampleSheets/
 
 echo "this script will run iSAAC benchmarking and monitor system using collectl"
 
