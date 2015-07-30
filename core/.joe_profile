@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "Loading JR"
-PATH=$PATH:$HOME/scripts/core:$HOME/scripts/benchmarking
+PATH=$PATH:$HOME/Scritps/core:$HOME/Scritps/benchmarking
 export PATH
