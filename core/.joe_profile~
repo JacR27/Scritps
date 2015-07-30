@@ -1,3 +1,0 @@
-echo "Loading JR"
-PATH=$PATH:$HOME/scripts/core
-export PATH

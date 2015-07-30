@@ -1,8 +1,0 @@
-#!/bin/bash
-
-for x
-do
-    echo $x
-    /home/sbsuser/scripts/bIsis4.sh $x
-done
-
