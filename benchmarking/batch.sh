@@ -1,9 +1,9 @@
 #!/bin/bash
 
-bisaac3lane4.sh W15 R1
+bIsis4.sh W19 R1
 
-bisaac3lane4.sh W15 R2
+bIsis4.sh W19 R2
 
-bisaac3lane4.sh W15 R3
+bIsis4.sh W19 R3
 
 exit
