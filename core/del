@@ -2,10 +2,16 @@
 #safe rm, achuall moves files to ~/.RB
 #not the best for moveing big files that are one differend partitions
 
+outputfolder=$HOME/.RB
+if [ ! -d "$outputfolder" ]
+then
+ mkdir $outputfolder 
+fi
+
 echo "Moving files to $HOME/.RB"
 for x
 do
-	mv $x $HOME/.RB
+	mv $x $outputfolder
 done
 
 exit
