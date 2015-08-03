@@ -18,7 +18,7 @@ CollectlPid=$!
 
 echo collectl started
 
-nohup /usr/bin/time -v $command -r /illumina/development/Isis/Genomes/Homo_sapiens/UCSC/hg19/Sequence/IsaacIndex5/sorted-reference.xml -b RunInfo.xml --base-calls-format bcl-gz -m 122 --tiles s_4 -o ${workingdir}${analysisdir}/Align > ${workingdir}${analysisdir}${processName}.stdout
+nohup /usr/bin/time -v $command -r /illumina/development/Isis/Genomes/Homo_sapiens/UCSC/hg19/Sequence/IsaacIndex5/sorted-reference.xml -b RunInfo.xml --base-calls-format bcl-gz -m 59  --tiles s_4 -o ${workingdir}${analysisdir}/Align > ${workingdir}${analysisdir}${processName}.stdout
 
 echo killing collectl
 
