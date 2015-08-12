@@ -1,0 +1,8 @@
+#include <stdio.h>
+
+main()
+{
+  int numa;
+  numa =  1;
+  printf("numa_max_node = %d", numa);
+}
