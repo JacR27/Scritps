@@ -1,6 +1,8 @@
 #include <stdio.h>
-
+#include <numa.h>
 main()
 {
-  printf("hello\n");
+  int numa;
+  numa = numa_available();
+  printf("%d\n",numa);
 }
