@@ -3,6 +3,6 @@
 main()
 {
   int numa;
-  numa = numa_max_node();
+  numa = numa_available();
   printf("%d\n",numa);
 }
