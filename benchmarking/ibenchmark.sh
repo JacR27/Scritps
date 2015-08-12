@@ -6,8 +6,7 @@ run=$2
 processName=${system}${workflow}${run}
 workingdir=./
 analysisdir=${workingdir}runs/$processName/
-command=/illumina/development/iSAAC/iSAAC-03.15.07.30/bin/isaac-align
-validationFile=${analysisdir}Align/Projects/default/default/sorted.bam.md5
+validationFile=${analysisdir}/Aligned/Projects/default/default/sorted.bam.md5
 resultsDir=${workingdir}results/
 
 echo "this script will run iSAAC benchmarking and monitor system using collectl"
@@ -19,7 +18,7 @@ CollectlPid=$!
 
 echo collectl started
 
-nohup /usr/bin/time -v $command -r /illumina/development/Isis/Genomes/Homo_sapiens/UCSC/hg19/Sequence/IsaacIndex5/sorted-reference.xml -b RunInfo.xml --base-calls-format bcl-gz -m 122 --tiles s_4 -o ${analysisdir}/Align --buffer-bins on > ${workingdir}${analysisdir}${processName}.stdout
+nohup /usr/bin/time -v $workflow.sh > ${workingdir}${analysisdir}${processName}.stdout
 
 echo killing collectl
 
@@ -32,6 +31,8 @@ gzip -d ${analysisdir}plot*
 mv ${analysisdir}plot* ${analysisdir}${processName}.dat
 
 cp $validationFile ${resultsDir}${processName}.val
+
+mv $workingdir/Aligned ${processName}Aligned
 
 
 echo $processName >> ${resultsDir}runtimes
