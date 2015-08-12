@@ -6,7 +6,7 @@ run=$2
 processName=${system}${workflow}${run}
 workingdir=./
 analysisdir=${workingdir}runs/$processName/
-validationFile=${analysisdir}/Aligned/Projects/default/default/sorted.bam.md5
+validationFile=${workingdir}Aligned/Projects/default/default/sorted.bam.md5
 resultsDir=${workingdir}results/
 
 echo "this script will run iSAAC benchmarking and monitor system using collectl"
@@ -34,8 +34,9 @@ cp $validationFile ${resultsDir}${processName}.val
 
 mv $workingdir/Aligned ${processName}Aligned
 
-
 echo $processName >> ${resultsDir}runtimes
 grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout >> ${resultsDir}runtimes
+
+rm ${workingdir}/Temp/{bin-*,gnuplot-*}
 
 exit
