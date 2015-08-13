@@ -18,7 +18,7 @@ CollectlPid=$!
 
 echo collectl started
 
-nohup /usr/bin/time -v $workflow.sh > ${workingdir}${analysisdir}${processName}.stdout
+nohup /usr/bin/time -v $workflow.sh > ${analysisdir}${processName}.stdout
 
 echo killing collectl
 
@@ -32,9 +32,12 @@ mv ${analysisdir}plot* ${analysisdir}${processName}.dat
 
 cp $validationFile ${resultsDir}${processName}.val
 
+grep -i "error" ${analysisdir}${processName}.stdout > ${resultsDir}${processName}.error
+
 mv $workingdir/Aligned ${processName}Aligned
 
 echo $processName >> ${resultsDir}runtimes
+
 grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout >> ${resultsDir}runtimes
 
 rm ${workingdir}/Temp/{bin-*,gnuplot-*}
