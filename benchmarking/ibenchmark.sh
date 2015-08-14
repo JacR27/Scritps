@@ -42,4 +42,6 @@ grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout >> ${result
 
 rm ${workingdir}/Temp/{bin-*,gnuplot-*}
 
+
+
 exit

@@ -1,12 +1,16 @@
 #!/bin/bash
 filename=$1
+
+echo $filename
 export GNUTERM=dumb
+
 /usr/bin/gnuplot <<\EOF
+
 reset
 clear
 workflow = ""
 hostname = ""
-file = $filename
+file = "$filename"
 set terminal png size 1500,500
 set output "CPU".hostname.workflow.".png"
 
