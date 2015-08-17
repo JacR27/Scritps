@@ -1,6 +1,17 @@
 #!/bin/bash
 filename=$1
 
+processName=$1
+outputDir=./
+inputDir=./
+scriptsDir=/home/sbsuser/Scritps/benchmarking/
+
+grep "Elapsed time" ${inputDir}${processName}.stdout | python ${scriptsDir}extractIsisSteps.py > $outputDir$processName
+
+python ${scriptsDir}collectlTimeDateConverter.py "$processName" "$outputDir" "$inputDir"
+echo $outputDir
+echo count > $outputDir/count
+
 echo $filename
 export GNUTERM=dumb
 
@@ -10,19 +21,19 @@ reset
 clear
 workflow = ""
 hostname = ""
-file = "S4I13R1.dat"
+file = "$filename.tsv"
 set terminal png size 1500,500
 set output "CPU".hostname.workflow.".png"
-set timefmt "%Y%m%d %H:%M:%S"
 
 set xdata time
+set timefmt "%s"
 set format x "%H:%M"
 set xlabel "time"
 set ylabel "Percent CPU"
-set yrange [0:110]
+#set yrange [0:110]
 set title "CPU usage"." ".hostname." ".workflow
 set style data line
-set key outside  
+set key outside
 #set xtic (1000)
 
 plot file using (column("Time")):(column("[CPU]Wait%")):xtic(60) title "[CPU]Wait%", "" using (column("Time")):(column("[CPU]Sys%")) title "[CPU]Sys%", "" using (column("Time")):(column("[CPU]Nice%")) title "[CPU]Nice%"# "" using (column("Time")):(column("[CPU]User%")) title "[CPU]User%"
@@ -40,7 +51,7 @@ set ylabel "GB"
 set title "Memory usage"." ".hostname." ".workflow
 set style data line
 
-plot file using (column("Time")):(column("[MEM]Commit")) title "[MEM]Commit", "" using (column("Time")):(column("[MEM]Cached")) title "[MEM]Cashed%"
+plot file using (column("Time")):(column("[MEM]Commit")) title "[MEM]Commit", "" using (column("Time")):(column("[MEM]Cached")) title "[MEM]Cashed"
 
 set output "IO".hostname.workflow.".png"
 set xdata time
