@@ -1,5 +1,4 @@
 #!/bin/bash
-filename=$1
 
 processName=$1
 outputDir=./
@@ -9,19 +8,19 @@ scriptsDir=/home/sbsuser/Scritps/benchmarking/
 grep "Elapsed time" ${inputDir}${processName}.stdout | python ${scriptsDir}extractIsisSteps.py > $outputDir$processName
 
 python ${scriptsDir}collectlTimeDateConverter.py "$processName" "$outputDir" "$inputDir"
+cp ${processName}.tsv collectl.tsv
+
 echo $outputDir
-echo count > $outputDir/count
 
 echo $filename
 export GNUTERM=dumb
-
 /usr/bin/gnuplot <<\EOF
 
 reset
 clear
 workflow = ""
 hostname = ""
-file = "$filename.tsv"
+file="collectl.tsv"
 set terminal png size 1500,500
 set output "CPU".hostname.workflow.".png"
 
@@ -65,3 +64,4 @@ plot file using (column("Time")):(column("[DSK]ReadKBTot")) title "[DSK]ReadKBTo
 set output
 #
 EOF
+rm collectl.tsv
