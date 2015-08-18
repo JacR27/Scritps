@@ -2,7 +2,8 @@
 
 for x
 do
-    echo $x
-    
+    cd S7${x}R1
+    collect.sh S7${x}R1
+    cd ..
 done
 

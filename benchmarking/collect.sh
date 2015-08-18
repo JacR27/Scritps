@@ -35,11 +35,7 @@ set style data line
 set key outside
 #set xtic (1000)
 
-plot file using (column("Time")):(column("[CPU]Wait%")):xtic(60) title "[CPU]Wait%", "" using (column("Time")):(column("[CPU]Sys%")) title "[CPU]Sys%", "" using (column("Time")):(column("[CPU]Nice%")) title "[CPU]Nice%"# "" using (column("Time")):(column("[CPU]User%")) title "[CPU]User%"
-
-plot file using (column("Time")):(column("[CPU]User%")) title "[CPU]User%"
-
-replot
+plot file using (column("Time")):(column("[CPU]Wait%")):xtic(60) title "[CPU]Wait%", "" using (column("Time")):(column("[CPU]Sys%")) title "[CPU]Sys%", "" using (column("Time")):(column("[CPU]Nice%")) title "[CPU]Nice%", "" using (column("Time")):(column("[CPU]User%")) title "[CPU]User%"
 
 set output "memory".hostname.workflow.".png"
 set xdata time
