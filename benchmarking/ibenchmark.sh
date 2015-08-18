@@ -34,13 +34,13 @@ cp $validationFile ${resultsDir}${processName}.val
 
 grep -i "error" ${analysisdir}${processName}.stdout > ${resultsDir}${processName}.error
 
-mv $workingdir/Aligned ${processName}Aligned
+mv ${workingdir}Aligned ${processName}Aligned
 
 echo $processName >> ${resultsDir}runtimes
 
 grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout >> ${resultsDir}runtimes
 
-rm ${workingdir}/Temp/{bin-*,gnuplot-*}
+rm ${workingdir}Temp/{bin-*,gnuplot-*}
 
 scriptsDir=/home/sbsuser/Scritps/benchmarking/
 
