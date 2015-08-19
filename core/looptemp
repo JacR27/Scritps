@@ -2,8 +2,8 @@
 
 for x
 do
-    cd S7${x}R1
-    collect.sh S7${x}R1
+    cd S4${x}R1
+    collect.sh S4${x}R1
     cd ..
 done
 
