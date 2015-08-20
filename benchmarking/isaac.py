@@ -18,8 +18,9 @@ compalation2 = "gcc-4.8.3"
 compalation3 = "gcc-4.7.4"
 compalation4 = "gcc-5.2.0"
 compalation5 = "gcc-4.7.4-no-debug ./configure --build-type Releise"
-compalation6= "gcc-4.7.4 CXXFLAGS=\"-O3\" CFLAGS=\"-O3\" ./configure"
-compalation7= "gcc-5.2.0 CXXFLAGS=\"-O3\" CFLAGS=\"-O3\" ./configure"
+compalation6 = "gcc-4.7.4 CXXFLAGS=\"-O3\" CFLAGS=\"-O3\" ./configure"
+compalation7 = "gcc-5.2.0 CXXFLAGS=\"-O3\" CFLAGS=\"-O3\" ./configure"
+compalation8 = "gcc-5.2.0"
 system1 = "S4"
 system2 = "swap off"
 system3 = "transparent huge pages"
@@ -87,6 +88,6 @@ I37 = isaacRun("I37",version1,comand16,compalation1,system1,runtime1,sample1)
 I38 = isaacRun("I38",version1,comand17,compalation1,system1,runtime1,sample1)
 I39 = isaacRun("I39",version1,comand18,compalation1,system1,runtime1,sample1)
 I40 = isaacRun("I40",version1,comand19,compalation1,system1,runtime1,sample1)
-
+I41 = isaacRun("I41",version1,comand1,compalation8,system1,runtime1,sample1)
 
 print(ya.dump(eval(sys.argv[1]),default_flow_style=False))
