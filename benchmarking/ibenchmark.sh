@@ -36,9 +36,7 @@ grep -i "error" ${analysisdir}${processName}.stdout > ${resultsDir}${processName
 
 mv ${workingdir}Aligned ${processName}Aligned
 
-echo $processName >> ${resultsDir}runtimes
-
-grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout >> ${resultsDir}runtimes
+grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout | sed "s/\t/$processName: /" >> ${resultsDir}runtimes
 
 rm ${workingdir}Temp/{bin-*,gnuplot-*}
 

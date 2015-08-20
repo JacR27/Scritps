@@ -1,7 +1,10 @@
 #!/bin/bash
 echo "Loading JR"
 PATH=$PATH:$HOME/Scritps/core:$HOME/Scritps/benchmarking
+PYTHONPATH=$PYTHONPATH:$HOME/Scritps/core:$HOME/Scritps/benchmarking
 git config --global user.name "Joe Rayner"
 git config --global user.email "jacryaner58@gmail.com"
 git config --global core.editor emacs 
+CDPATH=:$HOME/Scritps/core:$HOME/Scritps/benchmarking
 export PATH
+export PYTHONPATH
