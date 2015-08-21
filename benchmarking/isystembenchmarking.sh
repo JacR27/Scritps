@@ -48,7 +48,7 @@ python ${scriptsDir}collectlTimeDateConverter.py "$processName" "$analysisdir" "
 
 cp ${analysisdir}${processName}.tsv ${analysisdir}collectl.tsv
 
-gnuisaac.sh ${analysisdir} 
+/home/sbsuser/Scripts/benchmarking/gnuisaac.sh ${analysisdir} 
 
 rm ${analysisdir}collectl.tsv
 
