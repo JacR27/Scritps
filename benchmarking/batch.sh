@@ -3,9 +3,10 @@
 for x
 do
 
-    ibenchmark.sh $x R1
-    ibenchmark.sh $x R2
-    ibenchmark.sh $x R3
+    /home/sbsuser/Scritps/benchmarking/isystembenchmarking.sh $x R1
+    /home/sbsuser/Scritps/benchmarking/isystembenchmarking.sh $x R2
+    /home/sbsuser/Scritps/benchmarking/isystembenchmarking.sh $x R3
+
 done
    
 
