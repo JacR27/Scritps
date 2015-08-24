@@ -15,7 +15,8 @@ mkdir $analysisdir
 
 collectl -s cmd -f $analysisdir$processName &
 CollectlPid=$!
-
+/home/sbsuser/Scritps/benchmarking/cpuMHz.sh $analysisdir &
+cpuMHzPid=$!
 echo collectl started
 
 nohup /usr/bin/time -v /home/sbsuser/Scritps/benchmarking/$workflow.sh > ${analysisdir}${processName}.stdout
@@ -23,6 +24,7 @@ nohup /usr/bin/time -v /home/sbsuser/Scritps/benchmarking/$workflow.sh > ${analy
 echo killing collectl
 
 kill $CollectlPid
+kill $cpuMHzPid
 
 collectl -p $analysisdir${processName}* -P -f ${analysisdir}plot*
 
@@ -48,7 +50,7 @@ python ${scriptsDir}collectlTimeDateConverter.py "$processName" "$analysisdir" "
 
 cp ${analysisdir}${processName}.tsv ${analysisdir}collectl.tsv
 
-/home/sbsuser/Scripts/benchmarking/gnuisaac.sh ${analysisdir} 
+/home/sbsuser/Scritps/benchmarking/gnuisaac.sh ${analysisdir} 
 
 rm ${analysisdir}collectl.tsv
 

@@ -5,7 +5,7 @@ analysisdir=$1
 while [ 1 ]; do
     sleep 1
     dt=`date`
-    totalMHz=`grep 'MHz' /proc/cpuinfo | python cpuMHz.py`
+    totalMHz=`grep 'MHz' /proc/cpuinfo | python /home/sbsuser/Scritps/benchmarking/cpuMHz.py`
     echo "dt: $totalMHz" | sed "s/dt/$dt/" >>${analysisdir}MHz
     
     date >> ${analysisdir}MHzBD
