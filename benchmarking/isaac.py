@@ -13,6 +13,7 @@ class isaacRun(ya.YAMLObject):
 
 sample1 = "lane 4"
 version1 = "03.15.07.30"
+version2 = "03.15.08.24"
 compalation1 = "Roman"
 compalation2 = "gcc-4.8.3"
 compalation3 = "gcc-4.7.4"
@@ -21,9 +22,12 @@ compalation5 = "gcc-4.7.4-no-debug ./configure --build-type Releise"
 compalation6 = "gcc-4.7.4 CXXFLAGS=\"-O3\" CFLAGS=\"-O3\" ./configure"
 compalation7 = "gcc-5.2.0 CXXFLAGS=\"-O3\" CFLAGS=\"-O3\" ./configure"
 compalation8 = "gcc-5.2.0"
+
 system1 = "S4"
 system2 = "swap off"
 system3 = "transparent huge pages"
+system4 = "zone_reclaim_mode"
+system5 = "hugepages"
 runtime1= "default"
 runtime2= "zlibCloudflare"
 runtime3= "zlibIntel"
@@ -46,17 +50,17 @@ comand16 = "--base-calls-format fastq-gz --base-calls-directory /mnt/141128_HSX1
 comand17 = "--base-calls-format fastq-gz --base-calls-directory /mnt/141128_HSX177_0082_BH00UABBXX/Fastq --clusters-at-a-time 4000000"
 comand18 = "--base-calls-format fastq-gz --base-calls-directory /mnt/141128_HSX177_0082_BH00UABBXX/Fastq --clusters-at-a-time 8000000"
 comand19 = "--base-calls-format fastq-gz --base-calls-directory /mnt/141128_HSX177_0082_BH00UABBXX/Fastq --clusters-at-a-time 16000000"
-
+comand20 = "--base-calls-format fastq-gz --base-calls-directory /mnt/141128_HSX177_0082_BH00UABBXX/Fastq --clusters-at-a-time 6000000"
 
 I01 = isaacRun("I01",version1,comand1,compalation1,system1,runtime1,sample1)
-I02 = isaacRun("I02",version1,comand2,compalation1,system1,runtime1,sample1)
-I03 = isaacRun("I03",version1,comand3,compalation1,system1,runtime1,sample1)
-I04 = isaacRun("I04",version1,comand4,compalation1,system1,runtime1,sample1)
-I05 = isaacRun("I05",version1,comand5,compalation1,system1,runtime1,sample1)
-I06 = isaacRun("I06",version1,comand6,compalation1,system1,runtime1,sample1)
-I07 = isaacRun("I07",version1,comand7,compalation1,system1,runtime1,sample1)
-I08 = isaacRun("I08",version1,comand8,compalation1,system1,runtime1,sample1)
-I09 = isaacRun("I09",version1,comand9,compalation1,system1,runtime1,sample1)
+I02 = isaacRun("I2",version1,comand2,compalation1,system1,runtime1,sample1)
+I03 = isaacRun("I3",version1,comand3,compalation1,system1,runtime1,sample1)
+I04 = isaacRun("I4",version1,comand4,compalation1,system1,runtime1,sample1)
+I05 = isaacRun("I5",version1,comand5,compalation1,system1,runtime1,sample1)
+I06 = isaacRun("I6",version1,comand6,compalation1,system1,runtime1,sample1)
+I07 = isaacRun("I7",version1,comand7,compalation1,system1,runtime1,sample1)
+I08 = isaacRun("I8",version1,comand8,compalation1,system1,runtime1,sample1)
+I09 = isaacRun("I9",version1,comand9,compalation1,system1,runtime1,sample1)
 I10 = isaacRun("I10",version1,comand10,compalation1,system1,runtime1,sample1)
 I11 = isaacRun("I11",version1,comand11,compalation1,system1,runtime1,sample1)
 I12 = isaacRun("I12",version1,comand12,compalation1,system1,runtime1,sample1)
@@ -89,5 +93,15 @@ I38 = isaacRun("I38",version1,comand17,compalation1,system1,runtime1,sample1)
 I39 = isaacRun("I39",version1,comand18,compalation1,system1,runtime1,sample1)
 I40 = isaacRun("I40",version1,comand19,compalation1,system1,runtime1,sample1)
 I41 = isaacRun("I41",version1,comand1,compalation8,system1,runtime1,sample1)
+I42 = isaacRun("I42",version1,comand1,compalation3,system4,runtime1,sample1)
+I43 = isaacRun("I43",version1,comand1,compalation3,system5,runtime1,sample1)
+I44 = isaacRun("I44",version1,comand17,compalation3,system1,runtime1,sample1)
+I45 = isaacRun("I45",version1,comand20,compalation3,system1,runtime1,sample1)
+I46 = isaacRun("I46",version1,comand14,compalation3,system1,runtime1,sample1)
+I47 = isaacRun("I47",version2,comand3,compalation3,system1,runtime1,sample1)
+I48 = isaacRun("I48",version2,comand1,compalation3,system1,runtime1,sample1)
+
 
 print(ya.dump(eval(sys.argv[1]),default_flow_style=False))
+
+
