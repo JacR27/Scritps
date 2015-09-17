@@ -2,7 +2,7 @@
 
 for x
 do
-    for y in R1 R2 R3; do
+    for y in R4 R5 R6; do
 	cd S4${x}$y
 	analyseIsaacStdout.sh S4${x}$y
 	cd ..
