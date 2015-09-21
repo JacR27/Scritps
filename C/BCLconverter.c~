@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+/* parse, filter, demultiplex, reduse and split, bcl files */
+
+int readHeader(void);
+void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], unsigned char bases[], unsigned char qualities[]);
+void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[]);
+void split(unsigned int len, unsigned char baseCalls[]);
+void demultiplex(unsigned int len, unsigned char baseCalls[]);
+void reduce(void);
+
+main()
+{
+  unsigned int nClusters;
+  unsigned char *baseCalls, *bases, *qualities;
+
+  nClusters = readHeader();
+  bases = malloc(nClusters);
+  baseCalls = malloc(nClusters);
+  qualities = malloc(nClusters);
+  printf("Number of Clusters %d\n",nClusters);
+  
+  readBaseCalls(nClusters, baseCalls, bases, qualities);
+  
+  filterBaseCalls(nClusters, baseCalls);
+  
+  
+  free(baseCalls);
+  free(bases);
+  free(qualities);
+}
+
+
+/* read 32 bit little eden int from stdin */
+int readHeader(void)
+{
+  #define BYTESININT32 4
+  #define BITSINBYTE 8
+
+  unsigned int nClusters;
+  int c , i;
+  
+  nClusters = 0;
+
+  for (i = 0; i < BYTESININT32; ++i){
+    nClusters = nClusters + getchar() * pow(2,i*BITSINBYTE);
+  }
+  return nClusters;
+}
+
+
+
+/* read n bytes from standard in to array */
+void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], unsigned char bases[], unsigned char qualities[])
+{
+  int i;
+  unsigned char c;
+  for (i = 0; i < nBases; ++i){
+    c = getchar();
+    baseCalls[i] = c;
+    bases[i] = (c % 4) + '0';
+    qualities[i] = (c / 4);
+  }
+}
+
+
+/* remove element  */
+void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[])
+{
+  unsigned char *filter;
+  filter = malloc(nBases);
+  FILE *fp;
+  int i;
+  unsigned int nFilteredBases;
+  unsigned char c;
+  nFilteredBases = 0;
+  fp = fopen("s_4_1101.filter","r");
+  for (i = 0; i < nBases; ++i){
+    c = fgetc(fp);
+    nFilteredBases = nFilteredBases + c;
+    filter[i] = c;
+  }
+  fclose(fp);
+  printf("%d",i);
+  int j;
+  j = 0;
+  unsigned char *filteredBaseCalls;
+  filteredBaseCalls = malloc(nFilteredBases);
+  for (i = 0; i < nBases; ++i){
+    if (filter[i] == 1){
+      filteredBaseCalls[j] = baseCalls[i];
+      j += 1;
+    }
+  }
+  free(filter);
+  free(filteredBaseCalls);  
+}
+
+void join(unsigned int len, unsigned char base[]);
+{
+    int i;
+    int halfLen;
+    unsigned char *reducedBases;
+    halfLen = len / 4 + (len % 4 != 0);
+    reducedBases = malloc(halfLen);
+    for (i = 0; i < len; ++i){
+      reducedBases[i/2] = reducedBases[i/2] + base[i] * i%2 
+}
+
+
+
+
+
+
+
