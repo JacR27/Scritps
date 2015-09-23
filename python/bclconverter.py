@@ -1,9 +1,7 @@
 import sys
 import struct as st
-import numpy as np
 import math
 import multiprocessing as mp
-import filterstats
 import gzip
 
 def filterstats(SERFACES,SWATHS,TILES):
@@ -14,16 +12,12 @@ def filterstats(SERFACES,SWATHS,TILES):
                 filename= "s_4_"+ surface + swath + tile + ".filter"
                 file = open(filename,"rb")
                 file.read(8)
-                numberClusters = struct.unpack("I",file.read(4))[0]
+                numberClusters = st.unpack("I",file.read(4))[0]
                 bytes = file.read()
                 file.close()
-                data = struct.unpack(str(numberClusters)+"B",bytes))
+                data = st.unpack(str(numberClusters)+"B",bytes)
                 filters.append(data)
     return filters
-
-if __name__ == "__main__":
-    filterstats()
-
 
 def bclConverter(args):    
     def readBCL(foldername, filename):
@@ -41,8 +35,9 @@ def bclConverter(args):
         return nClusters, data
     
     def filterData(data,filters):
+        newClusters = sum(filter)
         filteredData = [point for i, point in enumerate(data) if filters[i]]
-        return filteredData
+        return filteredData, newClusters
         
     def extractBQ(data):
         bases =  [i%4 for i in data]
@@ -88,8 +83,8 @@ def bclConverter(args):
 
     def filterAndConvert(foldername,filename,filters):
         OrigonalClusters, data = readBCL(foldername, filename)
-        data = filterData(data,filters)
-        saveArray(data,OrigonalClusters,foldername,filename,".fbcl.gz")
+        data,newClusters = filterData(data,filters)
+        saveArray(data,newClusters,foldername,filename,".fbcl.gz")
         
     def demultiplex(filename,CYCLES,readnum):
         read = []
@@ -129,6 +124,6 @@ if __name__ == "__main__":
                     #bclConverter(filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read)
                     pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
                     sst += 1
-        #pool.close()
-        #pool.join()
+        pool.close()
+        pool.join()
 
