@@ -45,15 +45,15 @@ void Firstoutputs(void)
   free(jointBases);
 
   remapedQualities = reduceQualities(nClusters, qualities, qmap1);
-  //free(qualities);
+  free(qualities);
  
   jointQualities = join(nClusters, remapedQualities, 4);
   printArray(jointQualities, celingDev(nClusters,4), "rqualities",nClusters);
   free(jointQualities);
   
   interlevedQB = interleafe(remapedQualities,bases,nClusters);
-  //free(bases);
-  //free(remapedQualities);
+  free(bases);
+  free(remapedQualities);
   
   jointInterlevedQB = join(nClusters*2,interlevedQB,4);
   free(interlevedQB);
@@ -64,10 +64,10 @@ void Firstoutputs(void)
   
   
   //free(jointBases);
-  free(qualities);
+  //free(qualities);
   //free(jointQualities);
-  free(bases);
-  free(remapedQualities);
+  //free(bases);
+  //free(remapedQualities);
   //free(interlevedQB);
   //free(jointInterlevedQB);
   
@@ -191,8 +191,9 @@ unsigned char * join(unsigned int len, unsigned char array[], int bytesToJoin)
   unsigned char *reduced;
   maxMod = bytesToJoin - 1;
   newLen = celingDev(len,bytesToJoin);
-  reduced = malloc(newLen);
+  reduced = calloc(newLen,1);
   //printf("%d",newLen);
+  
   for (i = 0; i < len; ++i){
     reduced[i/bytesToJoin] = reduced[i/bytesToJoin] + array[i] * pow(2,(maxMod-(i%bytesToJoin))*(BITSINBYTE/bytesToJoin));
     //printf("base: %d index: %d newbase: %d\n",array[i],i/bytesToJoin,reduced[i/bytesToJoin]);
