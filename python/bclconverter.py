@@ -97,6 +97,16 @@ def bclConverter(args):
         readTf = flatten2d(transpose(read))
         saveArray(readTf,OrigonalClusters,"./",filename+readnum,".fasterq.gz")
 
+    def demultiplexAndFilter(filename,CYCLES,readnum,filters):
+        read = []
+        for cycle in CYCLES:
+            foldername = "./C" + cycle + ".1/"
+            OrigonalClusters, data =  readBCL(foldername, filename)
+            read.append(data)
+        readTf, newClusters = filterData(transpose(read),filters)
+        readTf = flatten2d(readTf)
+        saveArray(readTf,newClusters,"./",filename+readnum,".ffasterq.gz")
+        
     def transpose(array):
         transposedRead = list(map(list,zip(*array)))
         return transposedRead
@@ -104,7 +114,7 @@ def bclConverter(args):
     def flatten2d(array):
         return [i for sublist in array for i in sublist]
 
-    filterAndConvert(*args)
+    demultiplexAndFilter(*args)
     
 if __name__ == "__main__":
     
@@ -114,22 +124,21 @@ if __name__ == "__main__":
     TILES = tuple("{:02n}".format(i) for i in range(1,25))
     READS = ("1","2")
     filters = filterstats(SERFACES,SWATHS,TILES)
-    for cycle in CYCLES:
-        pool = mp.Pool()
-        sst = 0
-        for serface in SERFACES:
-            for swath in SWATHS:
-                for tile in TILES:
-                #for read in READS:
-                    foldername = "./C" + cycle + ".1/"
-                    
-                    
+    #for cycle in CYCLES:
+    
+    sst = 0
+    for serface in SERFACES:
+        for swath in SWATHS:
+            for tile in TILES:
+                pool = mp.Pool()
+                for read in READS:
+                    #foldername = "./C" + cycle + ".1/"
                     filename ="s_4_" + serface + swath + tile
-                    
-                    #bclConverter(filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read)
-                    pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
+                    bclConverter([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read,filters[sst]])
+                    #pool.apply_async(bclConverter,args=([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read,filters[sst]],))
+                    #pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
                     #bclConverter([foldername, filename,filters[sst]])
-                    sst += 1
-        pool.close()
-        pool.join()
+                sst += 1
+                pool.close()
+                pool.join()
 
