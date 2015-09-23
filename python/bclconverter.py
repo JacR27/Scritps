@@ -10,12 +10,14 @@ def filterstats(SERFACES,SWATHS,TILES):
         for swath in SWATHS:
             for tile in TILES:
                 filename= "s_4_"+ surface + swath + tile + ".filter"
+                print(filename)
                 file = open(filename,"rb")
                 file.read(8)
                 numberClusters = st.unpack("I",file.read(4))[0]
                 bytes = file.read()
                 file.close()
                 data = st.unpack(str(numberClusters)+"B",bytes)
+                print(sum(data))
                 filters.append(data)
     return filters
 
@@ -35,7 +37,7 @@ def bclConverter(args):
         return nClusters, data
     
     def filterData(data,filters):
-        newClusters = sum(filter)
+        newClusters = sum(filters)
         filteredData = [point for i, point in enumerate(data) if filters[i]]
         return filteredData, newClusters
         
@@ -102,7 +104,7 @@ def bclConverter(args):
     def flatten2d(array):
         return [i for sublist in array for i in sublist]
 
-    filterandConvert(*args)
+    filterAndConvert(*args)
     
 if __name__ == "__main__":
     
@@ -120,9 +122,13 @@ if __name__ == "__main__":
                 for tile in TILES:
                 #for read in READS:
                     foldername = "./C" + cycle + ".1/"
+                    
+                    
                     filename ="s_4_" + serface + swath + tile
+                    
                     #bclConverter(filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read)
                     pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
+                    #bclConverter([foldername, filename,filters[sst]])
                     sst += 1
         pool.close()
         pool.join()
