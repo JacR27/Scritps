@@ -3,6 +3,7 @@ import struct as st
 import math
 import multiprocessing as mp
 import gzip
+import os
 
 def filterstats(SERFACES,SWATHS,TILES):
     filters = []
@@ -127,7 +128,7 @@ def bclConverter(args):
 
     def convertFastq(filename,readlen):
         OrigonalClusters, data = readFasterq(filename+".fasterq.gz",readlen)
-        qualities, bases = extraxtBQ(data)
+        qualities, bases = extractBQ(data)
         qualityMap = {0:0, 7:1, 11:1, 22:2, 27:2, 32:2, 37:3, 42:3}
         remapedQualities = remapQualities(qualities, qualityMap)
         interleved = interleave(remapedQualities,bases)
@@ -141,7 +142,7 @@ def bclConverter(args):
     def flatten2d(array):
         return [i for sublist in array for i in sublist]
 
-    convertFastq(*args)
+    demultiplex(*args)
     
 if __name__ == "__main__":
     
@@ -149,7 +150,7 @@ if __name__ == "__main__":
     SERFACES = ("1","2")
     SWATHS = ("1","2")
     TILES = tuple("{:02n}".format(i) for i in range(1,25))
-    READS = ("1")
+    READS = ("2")
     #filters = filterstats(SERFACES,SWATHS,TILES)
     #for cycle in CYCLES:
     
@@ -160,9 +161,11 @@ if __name__ == "__main__":
                 #pool = mp.Pool()
                 for read in READS:
                     #foldername = "./C" + cycle + ".1/"
-                    filename ="s_4_" + serface + swath + tile + read
-                    bclConverter([filename,151])
-                    #bclConverter([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read,filters[sst]])
+                    filename ="s_4_" + serface + swath + tile 
+                    #os.rename("./"+filename+"fasterq.gz","./" + filename + ".fasterq.gz")
+                    #bclConverter([filename,151])
+                    #pool.apply_async(bclConverter,args=([filename,151],))
+                    bclConverter([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read])
                     #pool.apply_async(bclConverter,args=([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read,filters[sst]],))
                     #pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
                     #bclConverter([foldername, filename,filters[sst]])
