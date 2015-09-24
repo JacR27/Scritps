@@ -24,8 +24,8 @@ def filterstats(SERFACES,SWATHS,TILES):
 
 
 def bclConverter(args):    
-    def readBCL(foldername, filename):
-        file = gzip.open(foldername+filename + ".bcl.gz","rb")
+    def readBCL(foldername, filename, fileExtention):
+        file = gzip.open(foldername+filename+fileExtention,"rb")
     
         hbytes = file.read(4) # remove first 4 bytes
         nClusters = st.unpack('I',hbytes)[0]
@@ -83,7 +83,6 @@ def bclConverter(args):
     def basicConverter(foldername,filename):    
         OrigonalClusters, data = readBCL(foldername, filename)
         qualities, bases = extractBQ(data)
-    
         qualityMap = {0:0, 7:1, 11:1, 22:2, 27:2, 32:2, 37:3, 42:3}
         remapedQualities = remapQualities(qualities, qualityMap)
         interleved = interleave(remapedQualities,bases)
@@ -92,15 +91,13 @@ def bclConverter(args):
         saveArray(joined,OrigonalClusters,foldername,filename,".rqb.gz")
 
     def basicConverter(foldername,filename):
-        OrigonalClusters, data = readBCL(foldername, filename)
+        OrigonalClusters, data = readBCL(foldername, filename, ".fbcl.gz")
         qualities, bases = extractBQ(data)
-
-        
+        qualityMap = {0:0, 7:1, 11:1, 22:2, 27:2, 32:2, 37:3, 42:3}
         remapedQualities = remapQualities(qualities, qualityMap)
         interleved = interleave(remapedQualities,bases)
-
         joined = join(interleved,4)
-        saveArray(joined,OrigonalClusters,foldername,filename,".rqb.gz")
+        saveArray(joined,OrigonalClusters,foldername,filename,".frqb.gz")
 
     def filterAndConvert(foldername,filename,filters):
         OrigonalClusters, data = readBCL(foldername, filename)
@@ -142,7 +139,7 @@ def bclConverter(args):
     def flatten2d(array):
         return [i for sublist in array for i in sublist]
 
-    demultiplex(*args)
+    basicConverter(*args)
     
 if __name__ == "__main__":
     
@@ -150,26 +147,17 @@ if __name__ == "__main__":
     SERFACES = ("1","2")
     SWATHS = ("1","2")
     TILES = tuple("{:02n}".format(i) for i in range(1,25))
-    READS = ("2")
-    #filters = filterstats(SERFACES,SWATHS,TILES)
-    #for cycle in CYCLES:
     
-    sst = 0
-    for serface in SERFACES:
-        for swath in SWATHS:
-            for tile in TILES:
-                #pool = mp.Pool()
-                for read in READS:
-                    #foldername = "./C" + cycle + ".1/"
+    for cycle in CYCLES:
+        pool = mp.Pool()
+        for serface in SERFACES:
+            for swath in SWATHS:
+                for tile in TILES:
+                    foldername = "./C" + cycle + ".1/"
                     filename ="s_4_" + serface + swath + tile 
-                    #os.rename("./"+filename+"fasterq.gz","./" + filename + ".fasterq.gz")
-                    #bclConverter([filename,151])
-                    #pool.apply_async(bclConverter,args=([filename,151],))
-                    bclConverter([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read])
+                    #bclConverter([foldername, filename])
                     #pool.apply_async(bclConverter,args=([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*152],read,filters[sst]],))
-                    #pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
-                    #bclConverter([foldername, filename,filters[sst]])
-                sst += 1
-                #pool.close()
-                #pool.join()
+                    pool.apply_async(bclConverter,args=([foldername,filename],))
+        pool.close()
+        pool.join()
 
