@@ -15,10 +15,36 @@ void printArray(unsigned char array[], unsigned int len, char *fileName, unsigne
 unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsigned int len);
 void Firstoutputs(void);
 void sumfirst300(unsigned char array[]);
+void printFileNames(void);
 
 main()
 {
-  Firstoutputs();
+  
+  printFileNames();
+}
+
+void printFileNames(void)
+{
+  int nFiles, nCycles, nReads, nSwaths, nSurfaces, nTiles, i, j, k , n;
+  char extention[] = ".bcl.gz";
+  
+  nCycles = 303;
+  nReads = 2;
+  nSwaths = 2;
+  nSurfaces = 2;
+  nTiles = 24;
+  nFiles = (nSurfaces * nSwaths * nTiles);
+  int files[nFiles]; 
+  n = 0;
+  for (i = 1; i <= nSurfaces ; ++i){
+    for (j = 1; j <= nSwaths; ++j){
+      for (k = 1; k <= nTiles; ++k){
+	files[n] = i * 1000 + j * 100 + k;
+	printf("s_4_%d%s\n",files[n],extention);
+	++n;
+      }
+    }
+  }
 }
 
 void Firstoutputs(void)
@@ -27,6 +53,7 @@ void Firstoutputs(void)
   unsigned char *bases, *qualities, *jointBases, *jointQualities, *remapedQualities, *interlevedQB, *jointInterlevedQB;
   unsigned char qmap1[8] = {0,1,1,2,2,2,3,3};
   unsigned char qmap2[8] = {0,1,2,3,4,5,6,7};
+
   
   nClusters = readHeader();
   printf("Number of Clusters: %d\n", nClusters);
@@ -60,20 +87,6 @@ void Firstoutputs(void)
 
   printArray(jointInterlevedQB, celingDev(nClusters*2, 4),"basesandRqualities", nClusters); 
   free(jointInterlevedQB);
-
-  
-  
-  //free(jointBases);
-  //free(qualities);
-  //free(jointQualities);
-  //free(bases);
-  //free(remapedQualities);
-  //free(interlevedQB);
-  //free(jointInterlevedQB);
-  
-  
-  
-  
   
 }
 

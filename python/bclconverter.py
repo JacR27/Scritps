@@ -128,14 +128,14 @@ def bclConverter(args):
         OrigonalClusters, data = readFasterq(filename+".fasterq.gz",readlen)
         qualities, bases = extractBQ(data)
         del data
-        del bases
-        qualityMap = {0:0, 7:1, 11:1, 22:2, 27:2, 32:2, 37:3, 42:3}
-        qualities = remapQualities(qualities, qualityMap)
+        del qualities
+        #qualityMap = {0:0, 7:1, 11:1, 22:2, 27:2, 32:2, 37:3, 42:3}
+        #qualities = remapQualities(qualities, qualityMap)
         #data = interleave(qualities,bases)
         #del qualities
         #del bases
-        #data = join(data,4)
-        saveArray(qualities, OrigonalClusters, "./", filename, ".rfasterq.gz")
+        bases = join(bases,4)
+        saveArray(bases, OrigonalClusters, "./", filename, ".dbases.gz")
         
     def transpose(array):
         transposedRead = list(map(list,zip(*array)))
