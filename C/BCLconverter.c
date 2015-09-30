@@ -16,11 +16,12 @@ unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsig
 void Firstoutputs(void);
 void sumfirst300(unsigned char array[]);
 void printFileNames(void);
+void analysis(void);
+void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header);
 
 main()
 {
-  
-  printFileNames();
+  analysis();
 }
 
 void printFileNames(void)
@@ -90,6 +91,26 @@ void Firstoutputs(void)
   
 }
 
+void analysis(void)
+{
+  unsigned int nClusters;
+  unsigned char *basecalls, *joined;
+  int i;
+  nClusters = (readHeader()*151);
+  printf("Number of Clusters: %d\n", nClusters);
+
+  basecalls = malloc(nClusters);
+
+  /* populate bases and qualities */
+  readBaseCalls(nClusters, basecalls);
+
+  joined = join(nClusters, basecalls, 4);
+  free(basecalls);
+  printArrayStdout(joined, celingDev(nClusters,4),nClusters/151);
+  free(joined);
+}
+
+
 void sumfirst300(unsigned char array[])
 {
   int i;
@@ -148,6 +169,7 @@ void readBaseCalls(unsigned int nBases, unsigned char baseCalls[])
     baseCalls[i] = c;
   }
 }
+
 
 void readAndSplitBaseCalls(unsigned int nBases, unsigned char bases[], unsigned char qualities[])
 {
@@ -239,6 +261,13 @@ unsigned char * join(unsigned int len, unsigned char array[], int bytesToJoin)
   fwrite(&header,sizeof(header),1,outHandle);
   fwrite(array, 1, len, outHandle);
   fclose(outHandle);
+}
+
+
+void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header)
+{
+  write(1, &header,sizeof(header));
+  write(1, array, len); 
 }
 
 
