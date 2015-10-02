@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
+#include <omp.h>
 /* parse, filter, demultiplex, reduse and split, bcl files */
 
 int readHeader(void);
@@ -15,19 +18,47 @@ void printArray(unsigned char array[], unsigned int len, char *fileName, unsigne
 unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsigned int len);
 void Firstoutputs(void);
 void sumfirst300(unsigned char array[]);
-void printFileNames(void);
+void printFileNames(char extention[]);
 void analysis(void);
 void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header);
+void printBCL(void);
 
-main()
+main( int argc, char *argv[])
 {
-  analysis();
+  int n, m, x, l, ch;
+  for (n = 1; n < argc; ++n){
+    switch( (int)argv[n][0] ){
+    case '/':
+    case '-': 
+      x = 0;
+      l = strlen( argv[n] );
+      for ( m=1; m <l; ++m ){
+	ch = (int)argv[n][m];
+	switch(ch){
+	case 'p':
+	  printBCL();
+	  break;
+	case 'n':
+	  printFileNames(".bcl");
+	  break;
+	default:
+	  printf("illegal option code = %c\n", ch);
+	  break;
+	}
+      }
+      break;
+    default:
+      printf( "test - %s\n", argv[n]);
+      break;
+    }
+  }
 }
 
-void printFileNames(void)
+void printFileNames(char extention[])
 {
+  #define MAXFILENAMELEN 20
   int nFiles, nCycles, nReads, nSwaths, nSurfaces, nTiles, i, j, k , n;
-  char extention[] = ".bcl.gz";
+  
   
   nCycles = 303;
   nReads = 2;
@@ -35,15 +66,32 @@ void printFileNames(void)
   nSurfaces = 2;
   nTiles = 24;
   nFiles = (nSurfaces * nSwaths * nTiles);
-  int files[nFiles]; 
+  char filenames[nFiles][MAXFILENAMELEN];
+  int files[nFiles];
   n = 0;
   for (i = 1; i <= nSurfaces ; ++i){
     for (j = 1; j <= nSwaths; ++j){
       for (k = 1; k <= nTiles; ++k){
 	files[n] = i * 1000 + j * 100 + k;
-	printf("s_4_%d%s\n",files[n],extention);
-	++n;
+	sprintf(filenames[n],files[n],extention);
+	n++;
       }
+    }
+  }
+}
+
+void printBCL(void)
+{
+  int i;
+  unsigned int nClusters;
+  unsigned char *baseCalls;
+  nClusters = readHeader();
+  printf("Number of Clusters: %d\n", nClusters);
+  readBaseCalls(nClusters, baseCalls);
+  for (i = 0; i < nClusters; i++){
+    printf("%d",baseCalls[i]);
+    if ((i % 10) == 0){
+      printf("\n");
     }
   }
 }
