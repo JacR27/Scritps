@@ -27,7 +27,7 @@ def bclConverter(args):
 
     
     def readBCL(foldername, filename, fileExtention):
-        file = open(foldername+filename+fileExtention,"rb")
+        file = gzip.open(foldername+filename+fileExtention,"rb")
         hbytes = file.read(4) # remove first 4 bytes
         nClusters = st.unpack('I',hbytes)[0]
         dbytes = file.read()
@@ -147,6 +147,23 @@ def bclConverter(args):
         saveArray(readTf,OrigonalClusters,"./",filename+readnum,".FJSDbases.gz")
         del readTf
 
+    def FJSRRDqualities(filename,CYCLES,readnum,filters):
+        read = []
+        for cycle in CYCLES:
+            foldername = "./C" + cycle + ".1/"
+            OrigonalClusters, data =  readBCL(foldername, filename, ".bcl.gz")
+            data, OrigonalClusters = filterData(data,filters)
+            qualities, bases = extractBQ(data)
+            del data, bases
+            qualityMap = {0:0, 7:1, 11:1, 22:2, 27:2, 32:2, 37:3, 42:3}
+            qualities = remapQualities(qualities, qualityMap)
+            read.append(qualities)
+            del qualities
+        readTf = flatten2d(transpose(read))
+        del read
+        readTf = join(readTf,4)
+        saveArray(readTf,OrigonalClusters,"./",filename+readnum,".FJSRRDqualities.gz")
+        del readTf
 
     def demultiplexAndFilter(filename,CYCLES,readnum,filters):
         read = []
@@ -178,7 +195,7 @@ def bclConverter(args):
     def flatten2d(array):
         return [i for sublist in array for i in sublist]
 
-    JSRRDqualities(*args)
+    FJSRRDqualities(*args)
     
 if __name__ == "__main__":
     
@@ -187,7 +204,7 @@ if __name__ == "__main__":
     SWATHS = ("1","2")
     TILES = tuple("{:02n}".format(i) for i in range(1,25))
     READS = ("1","2")
-    #filters= filterstats(SERFACES,SWATHS,TILES) 
+    filters= filterstats(SERFACES,SWATHS,TILES) 
     #for cycle in CYCLES:
     #pool=mp.Pool()
     sst = 0 
@@ -200,10 +217,11 @@ if __name__ == "__main__":
                     #foldername = "./C" + cycle + ".1/"
                     filename ="s_4_" + serface + swath + tile
                     #if filename not in ["s_4_11{:02n}".format(i) for i in range(1,18)]:
-                    pool.apply_async(bclConverter,args=([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*151],read],))
-                    sst += 1
+                    pool.apply_async(bclConverter,args=([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*151],read,filters[sst]],))
+                    #bclConverter([filename,CYCLES[0+(int(read)-1)*151:151+(int(read)-1)*151],read,filters[sst]])
                     #pool.apply_async(bclConverter,args=([foldername,filename,filters[sst]],))
             
                     
                     pool.close()
                     pool.join()
+                sst += 1
