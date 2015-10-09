@@ -27,7 +27,7 @@ def bclConverter(args):
 
     
     def readBCL(foldername, filename, fileExtention):
-        file = gzip.open(foldername+filename+fileExtention,"rb")
+        file = open(foldername+filename+fileExtention,"rb")
         hbytes = file.read(4) # remove first 4 bytes
         nClusters = st.unpack('I',hbytes)[0]
         dbytes = file.read()
@@ -84,13 +84,13 @@ def bclConverter(args):
         
     def basicConverter(foldername,filename,filters):
         OrigonalClusters, data = readBCL(foldername, filename, ".bcl")
-        #data, OrigonalClusters = filterData(data,filters)
-        #qualities, bases = extractBQ(data)
-        #del data
-        #qualityMap = {0:0, 7:11, 11:11, 22:27, 27:27, 32:27, 37:42, 42:42}
+        data, OrigonalClusters = filterData(data,filters)
+        qualities, bases = extractBQ(data)
+        del data
+        qualityMap = {0:0, 7:11, 11:11, 22:27, 27:27, 32:27, 37:42, 42:42}
         qualities = remapQualities(qualities, qualityMap)
         data = [((q*4) + bases[i]) for i,q in enumerate(qualities)]
-        del qualities, bases        
+        del qualities, bases
         saveArray(data,OrigonalClusters,foldername,filename,".frrbcl.gz")
 
     def filterAndConvert(foldername,filename,filters):
