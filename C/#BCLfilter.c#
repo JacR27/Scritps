@@ -1,0 +1,234 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <omp.h>
+#include <zlib.h>
+/* parse, filter, demultiplex, reduse and split, bcl files */
+
+int readHeader(FILE *input);
+void readBaseCalls(unsigned int nBases, unsigned char baseCalls[]);
+void readAndSplitBaseCalls(unsigned int nBases, unsigned char bases[], unsigned char qualities[]);
+void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[],unsigned char filter[]);
+unsigned char * join(unsigned int len, unsigned char array[],int bytesToJoin);
+void demultiplex(unsigned int len, unsigned char baseCalls[]);
+unsigned char * reduceQualities(unsigned int len, unsigned char qualities[], unsigned char qualityMap[]);
+void printArray(unsigned char array[], unsigned int len, char *fileName, unsigned int header);
+unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsigned int len);
+void Firstoutputs(void);
+void sumfirst300(unsigned char array[]);
+void analysis(void);
+void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header);
+void printBCL(void);
+unsigned char * getFilter(unsigned char filename[]);
+void stuff(void);
+void printFileNames(char extention[]);
+main( int argc, char *argv[])
+{
+  ;
+}
+
+
+
+void analysis(void)
+{
+  unsigned int nClusters;
+  unsigned char *basecalls, *joined;
+  int i;
+  nClusters = (readHeader(stdin)*151);
+  printf("Number of Clusters: %d\n", nClusters);
+
+  basecalls = malloc(nClusters);
+
+  /* populate bases and qualities */
+  readBaseCalls(nClusters, basecalls);
+
+  joined = join(nClusters, basecalls, 4);
+  free(basecalls);
+  printArrayStdout(joined, celingDev(nClusters,4),nClusters/151);
+  free(joined);
+}
+
+
+void sumfirst300(unsigned char array[])
+{
+  int i;
+  int sum;
+  sum = 0;
+  for (i = 0; i < 300; ++i)
+    sum += array[i];
+  printf("%d\n",sum);
+}
+  
+
+int celingDev(int dividend, int devisor)
+{
+  return ((dividend / devisor) + (dividend % devisor != 0));
+}
+
+/* read 32 bit little eden int from stdin */
+int readHeader(FILE *input)
+{
+  #define BYTESININT32 4
+  #define BITSINBYTE 8
+
+  unsigned int nClusters;
+  int c , i;
+  
+  nClusters = 0;
+
+  for (i = 0; i<BYTESININT32; ++i){
+    nClusters = nClusters + fgetc(input) * pow(2,i*BITSINBYTE);
+  }
+  return nClusters;
+}
+
+unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsigned int len)
+{
+  int j;
+  unsigned char *interleved;
+  
+  interleved = malloc(len*2);
+  for (j=0; j<len; ++j){
+    interleved[j*2] = array1[j];
+    interleved[(j*2)+1] = array2[j];
+  }
+  return interleved;
+}
+       
+//interlevedQB = interleafe(qualities,bases,nClusters);
+
+/* read n bytes from standard in to array */
+void readBaseCalls(unsigned int nBases, unsigned char baseCalls[])
+{
+  int i;
+  unsigned char c;
+  for (i = 0; i < nBases; ++i){
+    c = getchar();
+    baseCalls[i] = c;
+  }
+}
+
+
+void readAndSplitBaseCalls(unsigned int nBases, unsigned char bases[], unsigned char qualities[])
+{
+  int i;
+  unsigned char c;
+  for (i=0; i<nBases; ++i){
+    c = getchar();
+    bases[i] = (c % 4);
+    qualities[i] = (c / 4);
+  }
+}
+
+
+/* read v3 filter file into array */
+unsigned char * getFilter(unsigned char filename[])
+{
+  #define EMPTYBYTES 4
+  #define VERSIONBYTES 4
+  #define NCLUSTERBYTES 4
+  int nClusters;
+  int filterVersion;
+  int nPassed;
+  unsigned char *filter;
+  FILE *fp;
+  int i;
+  unsigned char c;
+  fp = fopen(filename,"r");
+  for (i = 0; i < EMPTYBYTES; ++i){
+    c = fgetc(fp);
+  }
+  filterVersion = 0;
+  for (i = 0; i < VERSIONBYTES; ++i){
+    c = fgetc(fp);
+    filterVersion += c;
+  }
+  nClusters = readHeader(fp);
+  filter = malloc(nClusters);
+  nPassed = 0;
+  for (i = 0; i < nClusters; ++i){
+    c = fgetc(fp);
+    filter[i] = c;
+    nPassed += c;
+  }
+  fclose(fp);
+  printf("Filter file:%s, number of clusters: %d, number of passed clusters %d (%f%%)\n",filename,nClusters,nPassed,(float)nPassed/nClusters *100);
+  free (filter);
+  return filename;
+}
+
+void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[],unsigned char filter[])
+{
+  int j , i;
+  j = 0;
+  int nFilteredBases;
+  unsigned char *filteredBaseCalls;
+  filteredBaseCalls = malloc(nFilteredBases);
+  for (i = 0; i < nBases; ++i){
+    if (filter[i] == 1){
+      filteredBaseCalls[j] = baseCalls[i];
+      j += 1;
+    }
+  }
+  free(filter);
+  free(filteredBaseCalls);  
+}
+
+
+/*Join bytes that do not use there maximum range of values */
+unsigned char * join(unsigned int len, unsigned char array[], int bytesToJoin)
+{
+  #define BITSINBYTE 8 
+  int i;
+  int maxMod;
+  int newLen;
+  unsigned char *reduced;
+  maxMod = bytesToJoin - 1;
+  newLen = celingDev(len,bytesToJoin);
+  reduced = calloc(newLen,1);
+  //printf("%d",newLen);
+  
+  for (i = 0; i < len; ++i){
+    reduced[i/bytesToJoin] = reduced[i/bytesToJoin] + array[i] * pow(2,(maxMod-(i%bytesToJoin))*(BITSINBYTE/bytesToJoin));
+    //printf("base: %d index: %d newbase: %d\n",array[i],i/bytesToJoin,reduced[i/bytesToJoin]);
+    }
+  return reduced;
+}
+
+
+ unsigned char * reduceQualities(unsigned int len, unsigned char qualities[],unsigned char qualityMap[8])
+{
+  unsigned char origonalQualities[8] = {0,7,11,22,27,32,37,42};
+  unsigned char *reducedQualities;
+  int i , j;
+  reducedQualities = malloc(len);
+  for (i = 0; i < len; ++i){
+    for (j = 1; j < 8; ++j){
+      if (qualities[i] == origonalQualities[j]){
+	reducedQualities[i] = qualityMap[j];
+      }
+    }
+  }
+  return reducedQualities;
+}
+
+ void printArray(unsigned char array[], unsigned int len, char *fileName,unsigned int header)
+{
+  int i;
+  FILE *outHandle;
+  outHandle = fopen(fileName,"w");
+  fwrite(&header,sizeof(header),1,outHandle);
+  fwrite(array, 1, len, outHandle);
+  fclose(outHandle);
+}
+
+
+void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header)
+{
+  write(1, &header,sizeof(header));
+  write(1, array, len); 
+}
+
+
