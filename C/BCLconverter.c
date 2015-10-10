@@ -9,11 +9,15 @@
 
 int readHeader(FILE *input);
 
-void readBaseCalls(unsigned int nBases, unsigned char baseCalls[]);
+void printHist(int nUnique, char elements[], int count[]);
 
-void readAndSplitBaseCalls(unsigned int nBases, unsigned char bases[], unsigned char qualities[]);
+void charHist(unsigned char array[], int len);
 
-void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[],unsigned char filter[]);
+void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename[]);
+
+void splitBaseCalls(unsigned char baseCalls[], unsigned int nBases, unsigned char bases[], unsigned char qualities[]);
+
+void filterBaseCalls(unsigned int nPassed, unsigned int nBases, unsigned char baseCalls[],unsigned char filter[],unsigned char filteredBaseCalls[]);
 
 unsigned char * join(unsigned int len, unsigned char array[],int bytesToJoin);
 
@@ -27,13 +31,9 @@ unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsig
 
 void Firstoutputs(void);
 
-void sumfirst300(unsigned char array[]);
-
 void analysis(void);
 
 void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header);
-
-void printBCL(void);
 
 int getFilterClusters(unsigned char filename[]);
 
@@ -45,7 +45,7 @@ void stuff(void);
 
 void printFileNames(char extention[]);
 
-
+void frr(void);
 
 main( int argc, char *argv[])
 {
@@ -60,7 +60,6 @@ main( int argc, char *argv[])
 	ch = (int)argv[n][m];
 	switch(ch){
 	case 'p':
-	  printBCL();
 	  break;
 	case 'n':
 	  break;
@@ -82,10 +81,10 @@ main( int argc, char *argv[])
 
 void stuff(void)
 {
-  printFileNames(".filter");
+  frr();
 }
 
-void printFileNames(char extention[])
+void frr(void)
 {
   #define MAXFILENAMELEN 20
   int nSurfaces, nSwaths, nTiles, nFiles;
@@ -97,127 +96,50 @@ void printFileNames(char extention[])
   nTiles = 8;
   
   nFiles = (nSurfaces * nSwaths * nTiles);
-  char filenames[nFiles][MAXFILENAMELEN];
+  char filterNames[nFiles][MAXFILENAMELEN];
+  char bclNames[nFiles][MAXFILENAMELEN];
   n = 0;
   for (i = 1; i <= nSurfaces ; ++i){
     for (j = 1; j <= nSwaths; ++j){
       for (k = 1; k <= nTiles; ++k){         
-	sprintf(filenames[n],"s_%s_%i%i%02d%s",lane,i,j,k,extention);
+	sprintf(filterNames[n],"s_%s_%i%i%02d%s",lane,i,j,k,".filter");
+	sprintf(bclNames[n],"s_%s_%i%i%02d%s",lane,i,j,k,".bcl");
 	n++;
       }
     }
   }
   int nClusters;
-  nClusters = getFilterClusters(filenames[0]);
+  nClusters = getFilterClusters(filterNames[0]);
   unsigned char * filter;
+  unsigned char * baseCalls, *bases, *qualities;
+  
   filter = malloc(nClusters);
-  int nPasses;
-  int fi;
-  for (fi=0; fi <1;++fi){
-    nPasses = getFilterMask(filter, nClusters,filenames[fi]);
-  }
-  int i;
-  for (i = 0; i<nClusters; 
-  free(filter);
-  
-}
-
-void printBCL(void)
-{
-  int i;
-  unsigned int nClusters;
-  unsigned char *baseCalls;
-  nClusters = readHeader(stdin);
-  printf("Number of Clusters: %d\n", nClusters);
-  readBaseCalls(nClusters, baseCalls);
-  for (i = 0; i < nClusters; i++){
-    printf("%d",baseCalls[i]);
-    if ((i % 10) == 0){
-      printf("\n");
-    }
-  }
-}
-
-void Firstoutputs(void)
-{
-  unsigned int nClusters;
-  unsigned char *bases, *qualities, *jointBases, *jointQualities, *remapedQualities, *interlevedQB, *jointInterlevedQB;
-  unsigned char qmap1[8] = {0,1,1,2,2,2,3,3};
-  unsigned char qmap2[8] = {0,1,2,3,4,5,6,7};
-
-  
-  nClusters = readHeader(stdin);
-  printf("Number of Clusters: %d\n", nClusters);
-  
+  baseCalls = malloc(nClusters);
   bases = malloc(nClusters);
   qualities = malloc(nClusters);
-  
-  /* populate bases and qualities */
-  readAndSplitBaseCalls(nClusters, bases, qualities);
-  
-  /* write qualities */
-  printArray(qualities, nClusters, "qualities", nClusters);
-  
-  jointBases = join(nClusters, bases, 4);
-  printArray(jointBases, celingDev(nClusters,4), "bases", nClusters);
-  free(jointBases);
 
-  remapedQualities = reduceQualities(nClusters, qualities, qmap1);
-  free(qualities);
- 
-  jointQualities = join(nClusters, remapedQualities, 4);
-  printArray(jointQualities, celingDev(nClusters,4), "rqualities",nClusters);
-  free(jointQualities);
+  int nPasses;
   
-  interlevedQB = interleafe(remapedQualities,bases,nClusters);
-  free(bases);
-  free(remapedQualities);
+  int fi;
+  for (fi=0; fi <1;++fi){
+    nPasses = getFilterMask(filter, nClusters,filterNames[fi]);
+    readBaseCalls(nClusters, baseCalls, bclNames[fi]);
+    splitBaseCalls(baseCalls, nClusters, bases, qualities);
+  }
+  //printArray(qualities, nClusters,"qualities", nClusters);
   
-  jointInterlevedQB = join(nClusters*2,interlevedQB,4);
-  free(interlevedQB);
-
-  printArray(jointInterlevedQB, celingDev(nClusters*2, 4),"basesandRqualities", nClusters); 
-  free(jointInterlevedQB);
-  
+  charHist(qualities,nClusters);
+  free(baseCalls);
+  free(filter);
 }
 
-void analysis(void)
-{
-  unsigned int nClusters;
-  unsigned char *basecalls, *joined;
-  int i;
-  nClusters = (readHeader(stdin)*151);
-  printf("Number of Clusters: %d\n", nClusters);
-
-  basecalls = malloc(nClusters);
-
-  /* populate bases and qualities */
-  readBaseCalls(nClusters, basecalls);
-
-  joined = join(nClusters, basecalls, 4);
-  free(basecalls);
-  printArrayStdout(joined, celingDev(nClusters,4),nClusters/151);
-  free(joined);
-}
-
-
-void sumfirst300(unsigned char array[])
-{
-  int i;
-  int sum;
-  sum = 0;
-  for (i = 0; i < 300; ++i)
-    sum += array[i];
-  printf("%d\n",sum);
-}
-  
 
 int celingDev(int dividend, int devisor)
 {
   return ((dividend / devisor) + (dividend % devisor != 0));
 }
 
-/* read 32 bit little eden int from stdin */
+/* read 32 bit little eden int from file */
 int readHeader(FILE *input)
 {
   #define BYTESININT32 4
@@ -250,108 +172,77 @@ unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsig
 //interlevedQB = interleafe(qualities,bases,nClusters);
 
 /* read n bytes from standard in to array */
-void readBaseCalls(unsigned int nBases, unsigned char baseCalls[])
+void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename[])
 {
+  #define BYTESININT32 4
+  #define BITSINBYTE 8
+
   int i;
+  int nClusters;
   unsigned char c;
-  for (i = 0; i < nBases; ++i){
-    c = getchar();
-    baseCalls[i] = c;
+  FILE * inputFile;
+  inputFile = fopen(filename,"r");
+  unsigned char rawNClusters[BYTESININT32];
+  fread(rawNClusters,1, BYTESININT32,inputFile);
+  nClusters =0;
+  for (i = 0; i<BYTESININT32; ++i){
+    nClusters = nClusters + rawNClusters[i] * pow(2,i*BITSINBYTE);
   }
+  //printf("filename: %s, nClusters %d\n",filename,nClusters);
+  fread(baseCalls, 1, nBases,inputFile);
+  fclose(inputFile);
 }
 
 
-void readAndSplitBaseCalls(unsigned int nBases, unsigned char bases[], unsigned char qualities[])
+
+void splitBaseCalls(unsigned char baseCalls[], unsigned int nBases, unsigned char bases[], unsigned char qualities[])
 {
   int i;
   unsigned char c;
   for (i=0; i<nBases; ++i){
-    c = getchar();
+    c = baseCalls[i];
     bases[i] = (c % 4);
     qualities[i] = (c / 4);
   }
 }
 
-
-
-/* read v3 filter file into array */
-int getFilterMask(unsigned char filter[], unsigned int len, unsigned char filename[])
+void charHist(unsigned char array[], int len)
 {
-  int nClusters; /* number contained in header of filter file */
-  int filterVersion; /* version, contained in header of filter file */
-  int nPassed; /* number of passed bases */
-  int i; /* loop variable */
-  unsigned char c; /*temp var*/
-  FILE *fp; 
-  
-  fp = fopen(filename,"r");
-  readHeader(fp);
-  filterVersion = readHeader(fp);
-  nClusters = readHeader(fp);
-  nPassed = 0;
-  for (i = 0; i < nClusters; ++i){
-    c = fgetc(fp);
-    filter[i] = c;
-    nPassed += c;
-  }
-  printf("Filter file:%s, version:%d number of clusters: %d, number of passed clusters %d (%f%%)\n",filename,filterVersion,nClusters,nPassed,(float)nPassed/nClusters *100);
-  
-  fclose(fp);
-  
-  return nPassed;
-}
+  #define MAXUNIQUE 256
+  int i;
+  int nUnique;
+  unsigned char c;
+  unsigned int unique[MAXUNIQUE] = {0};
 
-int getFilterClusters(unsigned char filename[])
-{
-  int nClusters; /* number contained in header of filter file */
-  int nPassed; /* number of passed bases */
-  FILE *fp;
-  fp = fopen(filename,"r");
-  readHeader(fp);
-  readHeader(fp);
-  nClusters = readHeader(fp);
-  nPassed = 0;
-  fclose(fp);
-  return nClusters;
-}
-int getFilterPasses(unsigned char filename[])
-{
-  int nClusters; /* number contained in header of filter file */
-  int nPassed; /* number of passed bases */
-  int i; /* loop variable */
-  unsigned char c; /*temp var*/
-  FILE *fp;
-  fp = fopen(filename,"r");
-  readHeader(fp);
-  readHeader(fp);
-  nClusters = readHeader(fp);
-  nPassed = 0;
-  for (i = 0; i < nClusters; ++i){
-    c = fgetc(fp);
-    nPassed += c;
-  }
-  fclose(fp);
-  return nPassed;
-}
-
-
-void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[],unsigned char filter[])
-{
-  int j , i;
-  j = 0;
-  int nFilteredBases;
-  unsigned char *filteredBaseCalls;
-  filteredBaseCalls = malloc(nFilteredBases);
-  for (i = 0; i < nBases; ++i){
-    if (filter[i] == 1){
-      filteredBaseCalls[j] = baseCalls[i];
-      j += 1;
+  nUnique = 0;
+  for (i=0;i<len;++i){
+    c = array[i];
+    if (!unique[c]){
+       nUnique += 1;
     }
+    unique[c] +=1;
   }
-  free(filter);
-  free(filteredBaseCalls);  
+  unsigned char elements[nUnique];
+  unsigned int count[nUnique];
+  int n;
+  n = 0;
+  for (i=0; i<MAXUNIQUE;i++){
+      if (unique[i]){
+        elements[n] = i;
+        count[n] = unique[i];
+	n++;
+     }
+  }
+  printHist(nUnique, elements, count);
 }
 
+ void printHist(int nUnique, char elements[], int count[])
+{
+  int i;
+  for (i=0;i<nUnique;i++){
+     printf("element: %d, count %d \n", elements[i],count[i]);
+  }
+}
 
 /*Join bytes that do not use there maximum range of values */
 unsigned char * join(unsigned int len, unsigned char array[], int bytesToJoin)
@@ -407,4 +298,76 @@ void printArrayStdout(unsigned char array[], unsigned int len, unsigned int head
   write(1, array, len); 
 }
 
+
+/* read v3 filter file into array */
+int getFilterMask(unsigned char filter[], unsigned int len, unsigned char filename[])
+{
+  int nClusters; /* number contained in header of filter file */
+  int filterVersion; /* version, contained in header of filter file */
+  int nPassed; /* number of passed bases */
+  int i; /* loop variable */
+  unsigned char c; /*temp var*/
+  FILE *fp; 
+  fp = fopen(filename,"r");
+  readHeader(fp);
+  filterVersion = readHeader(fp);
+  nClusters = readHeader(fp);
+  nPassed = 0;
+  for (i = 0; i < nClusters; ++i){
+    c = fgetc(fp);
+    filter[i] = c;
+    nPassed += c;
+  }
+  //printf("Filter file:%s, version:%d number of clusters: %d, number of passed clusters %d (%f%%)\n",filename,filterVersion,nClusters,nPassed,(float)nPassed/nClusters *100);
+  fclose(fp);
+  
+  return nPassed;
+}
+
+int getFilterClusters(unsigned char filename[])
+{
+  int nClusters; /* number contained in header of filter file */
+  int nPassed; /* number of passed bases */
+  FILE *fp;
+  fp = fopen(filename,"r");
+  readHeader(fp);
+  readHeader(fp);
+  nClusters = readHeader(fp);
+  nPassed = 0;
+  fclose(fp);
+  return nClusters;
+}
+int getFilterPasses(unsigned char filename[])
+{
+  int nClusters; /* number contained in header of filter file */
+  int nPassed; /* number of passed bases */
+  int i; /* loop variable */
+  unsigned char c; /*temp var*/
+  FILE *fp;
+  fp = fopen(filename,"r");
+  readHeader(fp);
+  readHeader(fp);
+  nClusters = readHeader(fp);
+  nPassed = 0;
+  for (i = 0; i < nClusters; ++i){
+    c = fgetc(fp);
+    nPassed += c;
+  }
+  fclose(fp);
+  return nPassed;
+}
+
+
+void filterBaseCalls(unsigned int nPassed, unsigned int nBases, unsigned char baseCalls[],unsigned char filter[],unsigned char filteredBaseCalls[])
+{
+  int j , i;
+  j = 0;
+  int nFilteredBases;
+  for (i = 0; i < nBases; ++i){
+    if (filter[i] == 1){
+      filteredBaseCalls[j] = baseCalls[i];
+      j += 1;
+    }
+  }
+}
 
