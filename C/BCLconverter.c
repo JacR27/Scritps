@@ -204,7 +204,6 @@ void frr(void)
   char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN+10];
   
   for (fi=0; fi <nFiles;++fi){ /* loop through tiles*/
-  
     path[0] = '\0';
     strcpy(path, folderNames[0]);
     strcat(path, bclNames[fi]);
@@ -229,6 +228,9 @@ void frr(void)
        reducedQualities = malloc(nPostFiltering);
     }
 
+    
+
+
     for (ci = 0; ci <cvalue; ++ci){ /*loop through cycles*/
       path[0] = '\0';
       strcpy(path, folderNames[ci]);
@@ -242,7 +244,7 @@ void frr(void)
       else{
          postFilteringBaseCalls = baseCalls;
       }
-    
+      
       if (rflag){
         outpath[0] = '\0';
 	strcpy(outpath, path);
