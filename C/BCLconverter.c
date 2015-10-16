@@ -13,7 +13,11 @@
 
 /* parse, filter, demultiplex, reduse and split, bcl files */
 
-int readHeader(FILE *input);
+int readLittleEInt(FILE *input);
+
+int getFilterClusters(unsigned char filename[]);
+ 
+int readHeader(gzFile input);
 
 void printHist(unsigned long unique[]);
 
@@ -55,19 +59,23 @@ void printFileNames(char extention[]);
 
 void frr(void);
 
-int lvalue, tvalue, wvalue, svalue, cvalue;
+int mode, lvalue, tvalue, wvalue, svalue, cvalue; 
 int fflag, rflag, mflag, jflag, iflag, dflag;
+char bclFormat[10];
 
 main( int argc, char *argv[])
 
     {
-      extern int lvalue, tvalue, wvalue, svalue, cvalue;
+      extern int mode, lvalue, tvalue, wvalue, svalue, cvalue;
+      extern char bclFormat[];
       
       lvalue = 1;
       tvalue = 8;
       wvalue = 3;
       svalue = 2;
       cvalue = 202;
+      mode = 0;
+      strcpy(bclFormat, "bcl");
 
       extern int fflag, rflag, mflag, jflag, iflag, dflag;
       fflag = 0; //filtering
@@ -83,9 +91,14 @@ main( int argc, char *argv[])
 
       opterr = 0;
 
-      while ((c = getopt (argc, argv, "l:t:w:s:c:frmjid")) != -1)
+      while ((c = getopt (argc, argv, "o:l:t:w:s:c:z:frmjid")) != -1)
 	switch (c)
 	  {
+	  case 'o':
+	    mode = atoi(optarg);
+	    if (mode ==1)
+	      fflag = 1;
+	    break;
 	  case 'l':
 	    lvalue = atoi(optarg);
 	    break;
@@ -100,6 +113,10 @@ main( int argc, char *argv[])
 	    break;
 	  case 'c':
 	    cvalue = atoi(optarg);
+	    break;
+	  case 'z':
+	    strcpy(bclFormat, optarg);
+	    printf("%s\n",bclFormat);
 	    break;
 	  case 'f':
 	    fflag = 1;
@@ -120,7 +137,7 @@ main( int argc, char *argv[])
 	    dflag = 1;
 	    break;
 	  case '?':
-	    if (optopt == 'l' || optopt == 't' || optopt == 's' || optopt == 'f' || optopt == 'c')
+	    if (optopt == 'l' || optopt == 'o' || optopt == 't' || optopt == 's' || optopt == 'f' || optopt == 'c')
 	      fprintf (stderr, "Option -%c requires an argument.\n", optopt);
 	    else if (isprint (optopt))
 	      fprintf (stderr, "Unknown option `-%c'.\n", optopt);
@@ -133,12 +150,14 @@ main( int argc, char *argv[])
 	    abort ();
 	  }
 
-      printf ("lane = %d, cycles = %d, ntiles = %d, nswaths = %d, nsurfaces = %d, filter = %d, reduce resolution = %d, remap = %d, join = %d, split = %d, demultiplexed = %d\n",
-	      lvalue ,cvalue, tvalue , wvalue , svalue , fflag , rflag , mflag, jflag, iflag, dflag);
+      printf ("lane = %d, cycles = %d, ntiles = %d, nswaths = %d, nsurfaces = %d, bclformat = %s, filter = %d, reduce resolution = %d, remap = %d, join = %d, split = %d, demultiplexed = %d\n",
+	      lvalue ,cvalue, tvalue , wvalue , svalue ,bclFormat, fflag , rflag , mflag, jflag, iflag, dflag);
 
       for (index = optind; index < argc; index++)
 	printf ("Non-option argument %s\n", argv[index]);
-
+      
+      
+      
       frr();
       
       return 0;
@@ -149,21 +168,23 @@ main( int argc, char *argv[])
 
 void frr(void)
 {
-  #define MAXFILENAMELEN 20
+  printf("starting main");
   #define MAXFOLDERNAMELEN 8
-  int nFiles;
-  int i, j, k , n, f;  
-
-  extern int lvalue, tvalue, wvalue, svalue, cvalue;
-  
-  extern int fflag, rflag, mflag, jflag, iflag, dflag; //filtering, reducingResolution, remapping, joining, spliting, demultiplexing;
-
+  extern int cvalue;
+  int f;  
   char folderNames[cvalue][MAXFOLDERNAMELEN];
-  
   for (f = 1; f <= cvalue; ++f){
      sprintf(folderNames[f-1],"C%d.1/",f);
   }
 
+
+
+
+  #define MAXFILENAMELEN 20
+  extern int svalue, tvalue, wvalue, lvalue;
+  extern int fflag; //filtering
+  int nFiles;
+  int i, j, k , n;  
   nFiles = (svalue * wvalue * tvalue);
   char filterNames[nFiles][MAXFILENAMELEN]; /*weast of memory when not filtering???*/
   char bclNames[nFiles][MAXFILENAMELEN];
@@ -174,117 +195,140 @@ void frr(void)
 	if (fflag){
 	  sprintf(filterNames[n],"s_%d_%i%i%02d%s",lvalue,i,j,k,".filter");
 	}
-	sprintf(bclNames[n],"s_%d_%i%i%02d%s",lvalue,i,j,k,".bcl");
+	sprintf(bclNames[n],"s_%d_%i%i%02d.%s",lvalue,i,j,k,bclFormat);
 	n++;
       }
     }
   }
+  printf("got file names");
+
 
 
   int nQualites = 38;
+  //unsigned char qualityMap[] =      {0,7,7,7,7,7,11,11,11,11,11,11,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42};
+  unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
   unsigned char origonalQualities[] = {0,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41};
-  
   printf("nQualities: %d\n",sizeof(origonalQualities));
 
-  unsigned char qualityMap[] =        {0,7,7,7,7,7,11,11,11,11,11,11,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42};
   
-
   /*meta stats*/
   unsigned long uniqueQ[256] = {0};
   unsigned long uniqueB[256] = {0};
+
+  char fpath[MAXFILENAMELEN+MAXFOLDERNAMELEN];
+  extern int mode, rflag, mflag, jflag, iflag, dflag; //reducingResolution, remapping, joining, spliting, demultiplexing;
+  fpath[0] = 0;
+  int fi;
+  printf("stuff %s\n",fpath);
   
-  
+  for (fi=0; fi <nFiles;++fi){ /* loop through tiles*/
   unsigned int nClusters;
   unsigned int nPasses;
   unsigned int nPostFiltering;
-  int fi, ci;
-  unsigned char * baseCalls, *filteredBaseCalls, *bases, *qualities, *filter, *postFilteringBaseCalls, *reducedQualities, *rejoined;
+  unsigned char *filter;
   
-  char path[MAXFILENAMELEN+MAXFOLDERNAMELEN];
-  char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN+10];
+  switch(mode) {
+ case 1:
+   printf("geting number of cluster passing filtering %s\n",filterNames[fi]);
+   nClusters= getFilterClusters(filterNames[fi]);
+   nPasses = getFilterPasses(filterNames[fi]);
+   printf("%s: %d passed out of %d total clusters (%f%%)\n",filterNames[fi],nPasses,nClusters, ((float)nPasses/nClusters)*100);
+   break;
+ case 2:
+ printf("generating file name\n");
+
+ 
+   fpath[0] = '\0';
   
-  for (fi=0; fi <nFiles;++fi){ /* loop through tiles*/
-    path[0] = '\0';
-    strcpy(path, folderNames[0]);
-    strcat(path, bclNames[fi]);
-    nClusters = getClusters(path);
-    
-    
-    if (fflag){
+   strcpy(fpath, folderNames[0]);
+   strcat(fpath, bclNames[fi]);
+   printf("%s\n",fpath);
+   nClusters = getClusters(fpath);
+   printf("nclusters: %d\n", nClusters);
+      
+   
+   if (fflag){
+      printf("getting filter file\n");
       filter = malloc(nClusters);
       nPasses = getFilterMask(filter, nClusters,filterNames[fi]);
-      filteredBaseCalls= malloc(nPasses);
       nPostFiltering = nPasses;
-    }
-    
+      printf("%d\n",nPasses);
+   }
     else{
       nPostFiltering = nClusters;
     }
-    
-    baseCalls = malloc(nClusters);
-    if (rflag){
-       bases = malloc(nPostFiltering);
-       qualities = malloc(nPostFiltering);
-       reducedQualities = malloc(nPostFiltering);
-    }
 
-    
-
-
+    int ci;
+    printf("entering parrallel tile loop\n");
+    #pragma omp parallel for
     for (ci = 0; ci <cvalue; ++ci){ /*loop through cycles*/
+
+     
+      unsigned char * baseCalls, *filteredBaseCalls, *bases, *qualities, *reducedQualities, *rejoined, *postFilteringBaseCalls;
+      char path[MAXFILENAMELEN+MAXFOLDERNAMELEN];
+      char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN+10];
       path[0] = '\0';
       strcpy(path, folderNames[ci]);
       strcat(path, bclNames[fi]);
+
+      baseCalls = malloc(nClusters);
       readBaseCalls(nClusters, baseCalls, path);
-      
+
       if (fflag){
+         outpath[0] = '\0';
+	 strcpy(outpath, path);	
+	 strcat(outpath, ".filtered");
+	 filteredBaseCalls= malloc(nPasses);
+	 printf("%d,%d, %d,%d,%d\n",nClusters, nPostFiltering,sizeof(filter),sizeof(filteredBaseCalls),nPasses);
          filterBaseCalls(nClusters, baseCalls, filter, filteredBaseCalls);
+	 printArray(filteredBaseCalls, nPostFiltering, outpath ,nPostFiltering);
 	 postFilteringBaseCalls = filteredBaseCalls;
+	 free(baseCalls);
       }
       else{
          postFilteringBaseCalls = baseCalls;
       }
       
-      if (rflag){
-        outpath[0] = '\0';
-	strcpy(outpath, path);
-	strcat(outpath, ".rr");
-	splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
-	reduceQualities(reducedQualities,origonalQualities, nPostFiltering, qualities, qualityMap,nQualites);
-	
-	charHist(uniqueQ, reducedQualities,nPostFiltering);
-	charHist(uniqueB, bases,nPostFiltering);
-	rejoined = malloc(nPostFiltering);
-	rejoin(rejoined, nPostFiltering, reducedQualities,bases);
-	printArray(rejoined, nPostFiltering,outpath ,nPostFiltering);
-	free(rejoined);
-	
-	  
-      }
-      else{
-         printf("check1");
-         //reducedQualities = qualities;
-      }
-    }
-    
 
-    //printArray(qualities, nClusters,"qualities", nClusters);
-    //charHist(qualities,nPostFiltering);
-    
-    
-    free(postFilteringBaseCalls);
-    if (fflag){
+      if (rflag){
+	bases = malloc(nPostFiltering);
+	qualities = malloc(nPostFiltering);
+	splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);      
+      
+        outpath[0] = '\0';
+	strcpy(outpath, path);	
+	strcat(outpath, ".rrr");
+	
+	//reducedQualities = malloc(nPostFiltering);
+	//reduceQualities(reducedQualities,origonalQualities, nPostFiltering, qualities, qualityMap,nQualites);
+	
+	//rejoined = malloc(nPostFiltering);
+	//rejoin(rejoined, nPostFiltering, reducedQualities,bases);
+	//printArray(rejoined, nPostFiltering,outpath ,nPostFiltering);
+	//free(rejoined);
+	
+	#pragma omp critical
+	{
+	charHist(uniqueQ, qualities,nPostFiltering);
+	charHist(uniqueB, bases,nPostFiltering);
+        }
+
+	free(bases);
+	free(qualities);
+	//free(reducedQualities);
+      }
+      else
+	;
+      free(postFilteringBaseCalls);
+    }
+
+    if (fflag)
       free(filter);
-      free(baseCalls);
-    }
-    
-    if (rflag){
-      free(bases);
-      free(qualities);
-      free(reducedQualities);
-    }
-    //
+    break;
+   
   }
+  }
+  
   printHist(uniqueQ);
   printHist(uniqueB);
 }
@@ -297,7 +341,7 @@ int celingDev(int dividend, int devisor)
 }
 
 /* read 32 bit little eden int from file */
-int readHeader(FILE *input)
+int readHeader(gzFile input)
 {
   #define BYTESININT32 4
   #define BITSINBYTE 8
@@ -308,7 +352,7 @@ int readHeader(FILE *input)
   nClusters = 0;
 
   for (i = 0; i<BYTESININT32; ++i){
-    nClusters = nClusters + fgetc(input) * pow(2,i*BITSINBYTE);
+    nClusters = nClusters + gzgetc(input) * pow(2,i*BITSINBYTE);
   }
   return nClusters;
 }
@@ -337,17 +381,17 @@ void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename
   int i;
   int nClusters;
   unsigned char c;
-  FILE * inputFile;
-  inputFile = fopen(filename,"r");
+  gzFile inputFile;
+  inputFile = gzopen(filename,"r");
   unsigned char rawNClusters[BYTESININT32];
-  fread(rawNClusters,1, BYTESININT32,inputFile);
+  gzread(inputFile, rawNClusters, BYTESININT32);
   nClusters =0;
   for (i = 0; i<BYTESININT32; ++i){
     nClusters = nClusters + rawNClusters[i] * pow(2,i*BITSINBYTE);
   }
   printf("filename: %s, nClusters %d\n",filename,nClusters);
-  fread(baseCalls, 1, nBases,inputFile);
-  fclose(inputFile);
+  gzread(inputFile, baseCalls, nBases);
+  gzclose(inputFile);
 }
 
 
@@ -442,7 +486,7 @@ void rejoin(unsigned char *reduced, unsigned int len, unsigned char qualities[],
 {
   int i , j;  
   for (i = 0; i < len; ++i){
-    for (j = 1; j < nQualities; ++j){
+    for (j = 0; j < nQualities; ++j){
       if (qualities[i] == origonalQualities[j]){
 	reducedQualities[i] = qualityMap[j];
       }
@@ -478,9 +522,9 @@ int getFilterMask(unsigned char filter[], unsigned int len, unsigned char filena
   unsigned char c; /*temp var*/
   FILE *fp; 
   fp = fopen(filename,"r");
-  readHeader(fp);
-  filterVersion = readHeader(fp);
-  nClusters = readHeader(fp);
+  readLittleEInt(fp);
+  filterVersion = readLittleEInt(fp);
+  nClusters = readLittleEInt(fp);
   nPassed = 0;
   for (i = 0; i < nClusters; ++i){
     c = fgetc(fp);
@@ -496,11 +540,27 @@ int getFilterMask(unsigned char filter[], unsigned int len, unsigned char filena
 int getClusters(unsigned char filename[])
 {
   int nClusters; /* number contained in header of filter file */
-  FILE *fp;
-  fp = fopen(filename,"r");
+  gzFile fp;
+  fp = gzopen(filename,"r");
   nClusters = readHeader(fp);
+  gzclose(fp);
+  //nClusters = 69;
   return nClusters;
 }
+
+
+int getFilterClusters(unsigned char filename[])
+{
+  int nClusters; /* number contained in header of filter file */
+  FILE *fp;
+  fp = fopen(filename,"r");
+  readLittleEInt(fp);
+  readLittleEInt(fp);
+  nClusters = readLittleEInt(fp);
+  fclose(fp);
+  return nClusters;
+}
+
 int getFilterPasses(unsigned char filename[])
 {
   int nClusters; /* number contained in header of filter file */
@@ -509,9 +569,9 @@ int getFilterPasses(unsigned char filename[])
   unsigned char c; /*temp var*/
   FILE *fp;
   fp = fopen(filename,"r");
-  readHeader(fp);
-  readHeader(fp);
-  nClusters = readHeader(fp);
+  readLittleEInt(fp);
+  readLittleEInt(fp);
+  nClusters = readLittleEInt(fp);
   nPassed = 0;
   for (i = 0; i < nClusters; ++i){
     c = fgetc(fp);
@@ -524,14 +584,35 @@ int getFilterPasses(unsigned char filename[])
 
 void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[], unsigned char filter[], unsigned char filteredBaseCalls[])
 {
-  int j , i;
-  j = 0;
+  int j , i, nPasses;
   int nFilteredBases;
+  j = 0;
+  nPasses = 0;
+  printf("filtering\n");
   for (i = 0; i < nBases; ++i){
     if (filter[i] == 1){
+      ++nPasses;
       filteredBaseCalls[j] = baseCalls[i];
-      j += 1;
+      j++;
     }
   }
+  printf("number of passed filtering: %d %d", nPasses, j); 
 }
 
+
+
+int readLittleEInt(FILE *input)
+{
+  #define BYTESININT32 4
+  #define BITSINBYTE 8
+
+  unsigned int nClusters;
+  int c , i;
+  
+  nClusters = 0;
+
+  for (i = 0; i<BYTESININT32; ++i){
+    nClusters = nClusters + getc(input) * pow(2,i*BITSINBYTE);
+  }
+  return nClusters;
+}
