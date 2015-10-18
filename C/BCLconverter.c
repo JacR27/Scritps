@@ -13,6 +13,10 @@
 
 /* parse, filter, demultiplex, reduse and split, bcl files */
 
+float score2prob(int score);
+
+void qualities2probs(unsigned char qualities[],float probs[],unsigned int len);
+
 int readLittleEInt(FILE *input);
 
 int getFilterClusters(unsigned char filename[]);
@@ -55,11 +59,11 @@ int getFilterMask(unsigned char filter[], unsigned int len, unsigned char filena
 
 void stuff(void);
 
-void printFileNames(char extention[]);
-
 void frr(void);
 
-int mode, lvalue, tvalue, wvalue, svalue, cvalue; 
+void printFileNames(void);
+
+int mode, lvalue, tvalue, wvalue, svalue, cvalue, nFiles;
 int fflag, rflag, mflag, jflag, iflag, dflag;
 char bclFormat[10];
 
@@ -158,7 +162,7 @@ main( int argc, char *argv[])
       
       
       
-      frr();
+      printFileNames();
       
       return 0;
     }
@@ -166,44 +170,107 @@ main( int argc, char *argv[])
 
 
 
-void frr(void)
+#define MAXFOLDERNAMELEN 8
+char ** folderNames;
+void getfolderNames(void)
 {
-  printf("starting main");
-  #define MAXFOLDERNAMELEN 8
+  int i;
+  printf("starting main\n");
+
   extern int cvalue;
-  int f;  
-  char folderNames[cvalue][MAXFOLDERNAMELEN];
-  for (f = 1; f <= cvalue; ++f){
-     sprintf(folderNames[f-1],"C%d.1/",f);
+  extern char **folderNames;
+
+  folderNames= malloc(cvalue);
+  for (i =0; i<cvalue; ++i){
+    folderNames[i]=malloc(MAXFOLDERNAMELEN);
   }
 
+  int f;
+  char temp[MAXFOLDERNAMELEN];
+  for (f = 1; f <= cvalue; ++f){
+     ;
+     snprintf(temp,MAXFOLDERNAMELEN,"C%d.1",f);
+     folderNames[f-1] = temp;
+printf("%s\n",folderNames[f-1]);
+  }
+/*
+*/
+}
 
 
 
-  #define MAXFILENAMELEN 20
-  extern int svalue, tvalue, wvalue, lvalue;
-  extern int fflag; //filtering
-  int nFiles;
+
+#define MAXFILENAMELEN 20
+
+
+char ** getFileNames(char extention[])
+{
+  
+  char ** fileNames;
+  extern int svalue, tvalue, wvalue, lvalue, nFiles;  
   int i, j, k , n;  
-  nFiles = (svalue * wvalue * tvalue);
-  char filterNames[nFiles][MAXFILENAMELEN]; /*weast of memory when not filtering???*/
-  char bclNames[nFiles][MAXFILENAMELEN];
+  nFiles= (svalue * wvalue * tvalue);
+  
+  fileNames= malloc(nFiles);
+  for (i =0; i < nFiles; ++i){
+    fileNames[i]=malloc(MAXFILENAMELEN);
+  }
   n = 0;
+  char temp[MAXFILENAMELEN];
+  printf("nfiles %d\n",nFiles);
   for (i = 1; i <= svalue ; ++i){
     for (j = 1; j <= wvalue; ++j){
-      for (k = 1; k <= tvalue; ++k){ 
-	if (fflag){
-	  sprintf(filterNames[n],"s_%d_%i%i%02d%s",lvalue,i,j,k,".filter");
-	}
-	sprintf(bclNames[n],"s_%d_%i%i%02d.%s",lvalue,i,j,k,bclFormat);
+      for (k = 1; k <= tvalue; ++k){
+	printf("");
+	snprintf(temp,MAXFILENAMELEN,"s_%d_%d%d%02d.%s",lvalue,i,j,k,extention);
+	fileNames[n]=temp;
 	n++;
       }
     }
   }
+  
   printf("got file names");
+  return fileNames; 
+}
 
+void printFileNames(void)
+{
+  printf("generateing file names\n");
 
+  getfolderNames();
 
+  char ** filterNames = getFileNames("filter");
+  char ** bclNames = getFileNames(bclFormat);
+
+  
+  
+  
+  printf("generated file names");
+
+  extern int svalue, tvalue, wvalue, lvalue;
+  extern int cvalue;
+  
+  char fpath[MAXFILENAMELEN+MAXFOLDERNAMELEN];
+  fpath[0] = 0;
+  int fi;
+  for (fi=0; fi <nFiles;++fi){
+    printf("%s\n",folderNames[0]);
+  }
+}
+
+void frr(void)
+{
+  getfolderNames();
+  char ** filterNames;
+  char ** bclNames;
+  filterNames = getFileNames("filter");
+  bclNames = getFileNames(bclFormat);
+  
+
+  
+  extern int svalue, tvalue, wvalue, lvalue;
+  extern int fflag; //filtering
+  extern int cvalue;
   int nQualites = 38;
   //unsigned char qualityMap[] =      {0,7,7,7,7,7,11,11,11,11,11,11,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42};
   unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
@@ -325,6 +392,9 @@ void frr(void)
     if (fflag)
       free(filter);
     break;
+  case 3:
+    
+    break;
    
   }
   }
@@ -393,7 +463,6 @@ void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename
   gzread(inputFile, baseCalls, nBases);
   gzclose(inputFile);
 }
-
 
 
 void splitBaseCalls(unsigned char baseCalls[], unsigned int nBases, unsigned char bases[], unsigned char qualities[])
@@ -616,3 +685,18 @@ int readLittleEInt(FILE *input)
   }
   return nClusters;
 }
+
+float score2prob(int score)
+{
+  return pow(10,(-score)/10.);
+}
+
+void qualities2probs(unsigned char qualities[],float probs[],unsigned int len)
+{
+  int i;
+  for (i=0;i < len;++i){
+    probs[i] = score2prob(qualities[i]);
+  }
+}
+
+
