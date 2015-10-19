@@ -1,0 +1,23 @@
+#!/bin/bash
+tiles=25
+swaths=2
+surface=2
+cycles=302
+lane=5
+extention=bcl.gz.filtered
+
+
+for i in `seq -f "%02g" 1 $tiles`; 
+do
+    for k in `seq 1 $swaths`; 
+    do
+	for j in `seq 1 $surface`;
+	do
+	    for n in `seq 1 $cycles`;
+	    do
+		ls "C$n.1/s_$lane_$j$k$i.$extention"
+	    done
+	done
+    done
+done
+exit
