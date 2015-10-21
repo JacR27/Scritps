@@ -63,10 +63,10 @@ void frr(void);
 
 void printFileNames(void);
 
-int mode, lvalue, tvalue, wvalue, svalue, cvalue, nFiles;
+int mode, lvalue, tvalue, wvalue, svalue, cvalue, nFiles, cfvalue;
 int fflag, rflag, mflag, jflag, iflag, dflag;
-char bclFormat[10];
-
+char bclFormat[30];
+char printFile[50];
 main( int argc, char *argv[])
 
     {
@@ -74,12 +74,14 @@ main( int argc, char *argv[])
       extern char bclFormat[];
       
       lvalue = 1;
-      tvalue = 8;
-      wvalue = 3;
+      tvalue = 24;
+      wvalue = 2;
       svalue = 2;
-      cvalue = 202;
+      cvalue = 302;
+      cfvalue = 1;
       mode = 0;
       strcpy(bclFormat, "bcl");
+      
 
       extern int fflag, rflag, mflag, jflag, iflag, dflag;
       fflag = 0; //filtering
@@ -95,7 +97,7 @@ main( int argc, char *argv[])
 
       opterr = 0;
 
-      while ((c = getopt (argc, argv, "o:l:t:w:s:c:z:frmjid")) != -1)
+      while ((c = getopt (argc, argv, "p:o:l:t:w:s:c:z:frmjid")) != -1)
 	switch (c)
 	  {
 	  case 'o':
@@ -118,6 +120,9 @@ main( int argc, char *argv[])
 	  case 'c':
 	    cvalue = atoi(optarg);
 	    break;
+	  case 'p':
+	    strcpy(printFile, optarg);
+	    mode = 5;
 	  case 'z':
 	    strcpy(bclFormat, optarg);
 	    printf("%s\n",bclFormat);
@@ -160,15 +165,48 @@ main( int argc, char *argv[])
       for (index = optind; index < argc; index++)
 	printf ("Non-option argument %s\n", argv[index]);
       
-      
-      
-      frr();
+      if (mode == 5)
+	printBCL(printFile);
+      else
+	frr();
       
       return 0;
     }
 
 
-
+void printBCL(char filename[])
+{
+  unsigned long uniqueQ[256] = {0};
+  unsigned long uniqueB[256] = {0};  
+  int nClusters;
+  int i;
+  char cluster[50] = {'\0'};
+  unsigned char * baseCalls, * qualities, *bases;
+  nClusters = getClusters(filename);
+  baseCalls = malloc(nClusters);
+  bases = malloc(nClusters);
+  qualities = malloc(nClusters);
+  readBaseCalls(nClusters, baseCalls, filename);
+  splitBaseCalls(baseCalls, nClusters, bases, qualities);
+  free(baseCalls);
+  charHist(uniqueQ, qualities,nClusters);
+  charHist(uniqueB, bases,nClusters);
+  printHist(uniqueQ);
+  printHist(uniqueB);
+  char con[] = {'A','C','G','T'};
+  for (i = 0; i < nClusters; ++i){
+    cluster[0] = '\0';
+    if ((i+5) % 5 == 0)
+	sprintf(cluster,"%010d\t",i);
+      
+    printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
+    //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
+    cluster[0] = '\0';
+  }
+  free(qualities);
+  free(bases);
+}
+     
 
 
 void frr(void)
@@ -179,19 +217,20 @@ void frr(void)
   printf("starting main\n");
   extern int cvalue;
   //extern char **folderNames;
-  
-  char folderNames[cvalue][MAXFOLDERNAMELEN];
-  
-    int f;
-  for (f = 1; f <= cvalue; ++f){
+  int nCycles;
+  nCycles = cvalue - cfvalue;
+  printf("%d\n", nCycles);
+  char folderNames[nCycles][MAXFOLDERNAMELEN];
+  int f;
+  int t;
+  for (f = cfvalue, t = 0; f <= cvalue; ++f, ++t){
     printf("%d\n",f);
-     sprintf(folderNames[f-1],"C%d.1/",f);
+    sprintf(folderNames[t],"C%d.1/",f);
   }
 
 
 
-
-#define MAXFILENAMELEN 20
+#define MAXFILENAMELEN 50
 
 
   int i, j, k , n;
@@ -224,7 +263,8 @@ void frr(void)
   int nQualites = 8;
   //unsigned char qualityMap[] =      {0,7,7,7,7,7,11,11,11,11,11,11,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42};
   //unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
-  unsigned char qualityMap[] = {0,14,14,14,34,34,34,42}; 
+  unsigned char qualityMap[] = {0,14,14,14,34,34,34,42};
+  //unsigned char qualityMap[] = {0,1,1,1,2,2,2,3};
   unsigned char origonalQualities[] = {0,7,11,22,27,32,37,42};
   //unsigned char origonalQualities[] = {0,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41};
   printf("nQualities: %d\n",sizeof(origonalQualities));
@@ -233,6 +273,7 @@ void frr(void)
   /*meta stats*/
   unsigned long uniqueQ[256] = {0};
   unsigned long uniqueB[256] = {0};
+
 
   char fpath[MAXFILENAMELEN+MAXFOLDERNAMELEN];
   extern int mode, rflag, mflag, jflag, iflag, dflag; //reducingResolution, remapping, joining, spliting, demultiplexing;
@@ -276,10 +317,10 @@ void frr(void)
     int ci;
     printf("entering parrallel tile loop\n");
     #pragma omp parallel for
-    for (ci = 0; ci <cvalue; ++ci){ /*loop through cycles*/
+    for (ci = 0; ci <nCycles; ++ci){ /*loop through cycles*/
 
      
-      unsigned char * baseCalls, *filteredBaseCalls, *bases, *qualities, *reducedQualities, *rejoined, *postFilteringBaseCalls;
+      unsigned char * baseCalls, *filteredBaseCalls, *bases, *qualities, *reducedQualities, *rejoined, *interleafed, *joined, *postFilteringBaseCalls;
       char path[MAXFILENAMELEN+MAXFOLDERNAMELEN];
       char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN+10];
       path[0] = '\0';
@@ -302,6 +343,28 @@ void frr(void)
       }
       else{
          postFilteringBaseCalls = baseCalls;
+      }
+
+      if (mflag){
+	bases = malloc(nPostFiltering);
+        qualities = malloc(nPostFiltering);
+        splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
+        outpath[0] = '\0';
+        strcpy(outpath, path);
+        strcat(outpath, ".rm");
+        reducedQualities = malloc(nPostFiltering);
+        reduceQualities(reducedQualities,origonalQualities,nPostFiltering,qualities,qualityMap,nQualites);
+	
+	interleafed = interleafe(reducedQualities, bases, nPostFiltering);
+        
+	joined = join(nPostFiltering * 2, interleafed, 4);
+	  
+	printArray(joined, celingDev(nPostFiltering*2,4),outpath,nPostFiltering);
+        free(joined);
+	free(interleafed);
+        free(bases);
+        free(qualities);
+        free(reducedQualities);
       }
      
       if (rflag){
@@ -331,7 +394,7 @@ void frr(void)
     break;
   case 3:
     printf("%s\n",filterNames[fi]);
-    for (ci = 0; ci <cvalue; ++ci){ /*loop through cycles*/
+    for (ci = 0; ci <nCycles; ++ci){ /*loop through cycles*/
       fpath[0] = '\0';
       strcpy(fpath, folderNames[ci]);
       strcat(fpath, bclNames[fi]);
@@ -346,7 +409,8 @@ void frr(void)
     printf("%s\n",fpath);
     nClusters = getClusters(fpath);
     printf("nclusters: %d\n", nClusters);
-    for (ci = 0; ci <cvalue; ++ci){
+    #pragma omp parallel for
+    for (ci = 0; ci <nCycles; ++ci){
       unsigned char * baseCalls, *bases, *qualities;
       char path[MAXFILENAMELEN+MAXFOLDERNAMELEN];
       char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN+10];
@@ -358,8 +422,11 @@ void frr(void)
       bases = malloc(nClusters);
       qualities = malloc(nClusters);
       splitBaseCalls(baseCalls, nClusters, bases, qualities);      	
-      charHist(uniqueQ, qualities,nClusters);
-      charHist(uniqueB, bases,nClusters);
+      #pragma omp critical 
+      {
+	charHist(uniqueQ, qualities,nClusters);
+	charHist(uniqueB, bases,nClusters);
+      }
       free(bases);
       free(qualities);
       free(baseCalls);
