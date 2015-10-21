@@ -78,7 +78,7 @@ main( int argc, char *argv[])
       wvalue = 2;
       svalue = 2;
       cvalue = 302;
-      cfvalue = 1;
+      cfvalue = 302;
       mode = 0;
       strcpy(bclFormat, "bcl");
       
@@ -218,7 +218,7 @@ void frr(void)
   extern int cvalue;
   //extern char **folderNames;
   int nCycles;
-  nCycles = cvalue - cfvalue;
+  nCycles = (cvalue + 1) - cfvalue;
   printf("%d\n", nCycles);
   char folderNames[nCycles][MAXFOLDERNAMELEN];
   int f;
@@ -394,7 +394,9 @@ void frr(void)
     break;
   case 3:
     printf("%s\n",filterNames[fi]);
+    
     for (ci = 0; ci <nCycles; ++ci){ /*loop through cycles*/
+      printf("nCycles %d %d\n",nCycles,ci);
       fpath[0] = '\0';
       strcpy(fpath, folderNames[ci]);
       strcat(fpath, bclNames[fi]);

@@ -1,21 +1,22 @@
 #!/bin/bash
 tiles=24
-swaths=1
-surface=1
+swaths=2
+surface=2
 cycles=302
 lane=5
-extention=bcl.gz.rm
+extention=bcl
 
 
 for i in `seq -f "%02g" 1 $tiles`; 
 do
     for k in `seq 1 $swaths`; 
     do
-	for j in `seq 1 $surface`;
+	for j in `seq 2 $surface`;
 	do
 	    for n in `seq 1 $cycles`;
 	    do
 		gzip "C${n}.1/s_${lane}_${j}${k}${i}.$extention" &
+		#echo "hello"#"C${n}.1/s_${lane}_${j}${k}${i}.$extention" 
 	    done
 	    wait $pid
 	done
