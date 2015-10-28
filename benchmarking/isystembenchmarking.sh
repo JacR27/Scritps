@@ -1,36 +1,89 @@
 #!/bin/bash
 
-system=`hostname`
-workflow=$1
-run=$2
-processName=${system}${workflow}${run}
 workingdir=./
-analysisdir=${workingdir}runs/$processName/
+
+usage()
+{
+cat <<EOF
+usage:
+
+ISIS: $ISIS
+
+EOF
+}
+
+system=`hostname`
+
+#get option
+if [ $# -eq 0 ]; then usage; exit 1; fi
+while getopts "r:w:" argument; do
+    case $argument in
+        r ) run=$OPTARG;;
+	w ) workflow=$OPTARG;;
+        * ) usage
+            exit 1;;
+    esac
+done
+
+
+#check option
+if [[ -z $run ]]; then
+    echo "ERROR: Run (-r) required!"
+    exit 1
+fi
+
+if [[ -z $workflow ]]; then
+    echo "ERROR: Run (-w) required!"
+    exit 1
+fi
+
+processName=${system}${workflow}${run}
 validationFile=${workingdir}Aligned/Projects/default/default/sorted.bam.md5
+
+if [ -d "${workingdir}Aligned" ]; then
+    echo "ERROR: Aligned diectory all ready exists"
+    exit 1
+fi
+
 resultsDir=${workingdir}results/
+if [ ! -d "$resultDir" ]; then
+  mkdir $resultsDir
+fi
 
-echo "this script will run iSAAC benchmarking and monitor system using collectl"
+analysisdir=${workingdir}runs/$processName/
+if [ ! -d "$analysisdir" ]; then
+    mkdir -p $analysisdir
+else
+    echo "ERROR: analysis directory already existes"
+    exit 1
+fi
 
-mkdir $analysisdir
 
-collectl -s cmd -f $analysisdir$processName &
+echo "starting collectl"
+collectl -s cmd -f $analysisdir${processName}collectl &
 CollectlPid=$!
-/home/sbsuser/Scritps/benchmarking/cpuMHz.sh $analysisdir &
+
+echo "starting recording cpuMHz"
+cpuMHz.sh $analysisdir &
 cpuMHzPid=$!
-echo collectl started
 
-nohup /usr/bin/time -v /home/sbsuser/Scritps/benchmarking/$workflow.sh > ${analysisdir}${processName}.stdout
+echo "started monerating"
 
-echo killing collectl
 
+echo "starting iSAAC"
+nohup /usr/bin/time -v $workflow.sh > ${analysisdir}${processName}.stdout
+echo "finished iSAAC"
+
+echo "killing monerating"
 kill $CollectlPid
 kill $cpuMHzPid
 
-collectl -p $analysisdir${processName}* -P -f ${analysisdir}plot*
 
-gzip -d ${analysisdir}plot*
+collectl -p $analysisdir${processName}collectl* -P -f ${analysisdir}collectlplot
 
-mv ${analysisdir}plot* ${analysisdir}${processName}.dat
+gzip -d ${analysisdir}collectlplot*
+
+mv ${analysisdir}collectlplot* ${analysisdir}${processName}.dat
 
 cp $validationFile ${resultsDir}${processName}.val
 
@@ -40,17 +93,11 @@ mv ${workingdir}Aligned ${processName}Aligned
 
 grep "Elapsed (wall clock) time" ${analysisdir}${processName}.stdout | sed "s/\t/$processName: /" >> ${resultsDir}runtimes
 
-rm ${workingdir}Temp/{bin-*,gnuplot-*}
-
-scriptsDir=/home/sbsuser/Scritps/benchmarking/
-
-grep "Elapsed time" ${analysisdir}${processName}.stdout | python ${scriptsDir}extractIsisSteps.py > ${analysisdir}$processName
-
-python ${scriptsDir}collectlTimeDateConverter.py "$processName" "$analysisdir" "$analysisdir"
+collectlTimeDateConverter.py "$processName" "$analysisdir" "$analysisdir"
 
 cp ${analysisdir}${processName}.tsv ${analysisdir}collectl.tsv
 
-/home/sbsuser/Scritps/benchmarking/gnuisaac.sh ${analysisdir} 
+gnuisaac.sh ${analysisdir} 
 
 rm ${analysisdir}collectl.tsv
 

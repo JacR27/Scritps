@@ -78,7 +78,7 @@ main( int argc, char *argv[])
       wvalue = 2;
       svalue = 2;
       cvalue = 302;
-      cfvalue = 302;
+      cfvalue = 1;
       mode = 0;
       strcpy(bclFormat, "bcl");
       
@@ -122,7 +122,6 @@ main( int argc, char *argv[])
 	    break;
 	  case 'p':
 	    strcpy(printFile, optarg);
-	    mode = 5;
 	  case 'z':
 	    strcpy(bclFormat, optarg);
 	    printf("%s\n",bclFormat);
@@ -167,6 +166,8 @@ main( int argc, char *argv[])
       
       if (mode == 5)
 	printBCL(printFile);
+      else if (mode == 6)
+        printcompressedBCL(printFile);
       else
 	frr();
       
@@ -207,6 +208,41 @@ void printBCL(char filename[])
   free(bases);
 }
      
+
+void printcompressedBCL(char filename[])
+{
+  unsigned long uniqueQ[256] = {0};
+  unsigned long uniqueB[256] = {0};  
+  int nClusters;
+  int i;
+  char cluster[50] = {'\0'};
+  unsigned char * baseCalls, * qualities, *bases;
+  nClusters = getClusters(filename);
+  baseCalls = malloc(nClusters);
+  bases = malloc(nClusters);
+  qualities = malloc(nClusters);
+  
+  readReducedBaseCalls(nClusters, baseCalls, filename);
+  splitBaseCalls(baseCalls, nClusters, bases, qualities);
+  free(baseCalls);
+  charHist(uniqueQ, qualities,nClusters);
+  charHist(uniqueB, bases,nClusters);
+  printHist(uniqueQ);
+  printHist(uniqueB);
+  char con[] = {'A','C','G','T'};
+  for (i = 0; i < nClusters; ++i){
+    cluster[0] = '\0';
+    if ((i+5) % 5 == 0)
+	sprintf(cluster,"%010d\t",i);
+      
+    printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
+    //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
+    cluster[0] = '\0';
+  }
+  free(qualities);
+  free(bases);
+}
+
 
 
 void frr(void)
@@ -257,24 +293,31 @@ void frr(void)
 
 
 
-
   
 
   int nQualites = 8;
   //unsigned char qualityMap[] =      {0,7,7,7,7,7,11,11,11,11,11,11,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42};
   //unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
-  unsigned char qualityMap[] = {0,14,14,14,34,34,34,42};
+  //unsigned char qualityMap[] = {0,14,14,14,34,34,34,42};
+  //unsigned char qualityMap[] = {0,11,11,34,34,34,34,42};
+  unsigned char qualityMap[] = {0,42,42,42,42,42,42,42};
   //unsigned char qualityMap[] = {0,1,1,1,2,2,2,3};
+  //unsigned char qualityMap[] = {0,1,2,3,4,5,6,7};
+  //unsigned char origonalQualities[] = {0,14,14,14,34,34,34,42};
   unsigned char origonalQualities[] = {0,7,11,22,27,32,37,42};
   //unsigned char origonalQualities[] = {0,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41};
   printf("nQualities: %d\n",sizeof(origonalQualities));
 
   
   /*meta stats*/
+  
+  
   unsigned long uniqueQ[256] = {0};
   unsigned long uniqueB[256] = {0};
-
-
+  unsigned long totalClusters;
+  unsigned long totalPasses;
+  totalClusters = 0;
+  totalPasses = 0;
   char fpath[MAXFILENAMELEN+MAXFOLDERNAMELEN];
   extern int mode, rflag, mflag, jflag, iflag, dflag; //reducingResolution, remapping, joining, spliting, demultiplexing;
   fpath[0] = 0;
@@ -293,6 +336,9 @@ void frr(void)
    nClusters= getFilterClusters(filterNames[fi]);
    nPasses = getFilterPasses(filterNames[fi]);
    printf("%s: %d passed out of %d total clusters (%f%%)\n",filterNames[fi],nPasses,nClusters, ((float)nPasses/nClusters)*100);
+   totalClusters += nClusters;
+   totalPasses += nPasses;
+   printf("%s: %d passed out of %d total clusters (%f%%)\n",filterNames[fi],totalPasses,totalClusters, ((float)totalPasses/totalClusters)*100);
    break;
  case 2:
    printf("generating file name\n");
@@ -351,14 +397,11 @@ void frr(void)
         splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
         outpath[0] = '\0';
         strcpy(outpath, path);
-        strcat(outpath, ".rm");
+        strcat(outpath, ".rm.gz");
         reducedQualities = malloc(nPostFiltering);
         reduceQualities(reducedQualities,origonalQualities,nPostFiltering,qualities,qualityMap,nQualites);
-	
 	interleafed = interleafe(reducedQualities, bases, nPostFiltering);
-        
 	joined = join(nPostFiltering * 2, interleafed, 4);
-	  
 	printArray(joined, celingDev(nPostFiltering*2,4),outpath,nPostFiltering);
         free(joined);
 	free(interleafed);
@@ -373,7 +416,7 @@ void frr(void)
 	splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);    
         outpath[0] = '\0';
 	strcpy(outpath, path);	
-        strcat(outpath, ".rrr");
+        strcat(outpath, ".rrr_42.gz");
 	reducedQualities = malloc(nPostFiltering);
 	reduceQualities(reducedQualities,origonalQualities, nPostFiltering, qualities, qualityMap,nQualites);
 	rejoined = malloc(nPostFiltering);
@@ -386,6 +429,22 @@ void frr(void)
       }
       else
 	;
+      if (iflag){
+	bases = malloc(nPostFiltering);
+        qualities = malloc(nPostFiltering);
+        splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
+        outpath[0] = '\0';
+        strcpy(outpath, path);
+        strcat(outpath, ".q.gz");
+        printArray(qualities, nPostFiltering,outpath ,nPostFiltering);
+        outpath[0] = '\0';
+        strcpy(outpath, path);
+        strcat(outpath, ".b.gz");	
+	printArray(bases, nPostFiltering,outpath ,nPostFiltering);
+        free(bases);
+        free(qualities);
+        
+      }
       free(postFilteringBaseCalls);
     }
 
@@ -501,6 +560,34 @@ void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename
   gzclose(inputFile);
 }
 
+void readReducedBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename[])
+{
+  #define BYTESININT32 4
+  #define BITSINBYTE 8
+  char * buff;
+  int i;
+  unsigned int nBytes;
+  nBytes =celingDev(nBases,2); 
+  unsigned char c;
+  unsigned char c1;
+  unsigned char c2;
+  gzFile inputFile;
+  inputFile = gzopen(filename,"r");
+  buff = malloc(nBytes);
+  unsigned char rawNClusters[BYTESININT32];
+  gzread(inputFile, rawNClusters, BYTESININT32);
+  gzread(inputFile, buff, nBytes);
+  for (i=0;i<nBases;i++){
+    c = buff[i/2];
+    if (i % 2)
+      baseCalls[i] = c%16;
+    else
+      baseCalls[i] = c/16;
+  }
+  gzclose(inputFile);
+  free(buff);
+}
+
 
 void splitBaseCalls(unsigned char baseCalls[], unsigned int nBases, unsigned char bases[], unsigned char qualities[])
 {
@@ -603,11 +690,11 @@ void rejoin(unsigned char *reduced, unsigned int len, unsigned char qualities[],
  void printArray(unsigned char array[], unsigned int len, char *fileName,unsigned int header)
 {
   int i;
-  FILE *outHandle;
-  outHandle = fopen(fileName,"w");
-  fwrite(&header,sizeof(header),1,outHandle);
-  fwrite(array, 1, len, outHandle);
-  fclose(outHandle);
+  gzFile outHandle;
+  outHandle = gzopen(fileName,"w");
+  gzwrite(outHandle, &header,sizeof(header));
+  gzwrite(outHandle, array, len);
+  gzclose(outHandle);
 }
 
 

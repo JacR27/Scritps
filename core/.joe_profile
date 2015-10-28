@@ -1,11 +1,11 @@
 #!/bin/bash
 echo "Loading JR"
-PATH=$PATH:$HOME/Scritps/core:$HOME/Scritps/benchmarking
+PATH=$PATH:/mnt/nfs/Scritps/core:/mnt/nfs/Scritps/benchmarking:/mnt/nfs/Scritps/C:
 PYTHONPATH=$PYTHONPATH:$HOME/Scritps/core:$HOME/Scritps/benchmarking
 git config --global user.name "Joe Rayner"
 git config --global user.email "jacryaner58@gmail.com"
 git config --global core.editor emacs 
-CDPATH=:$HOME/Scritps/core:$HOME/Scritps/benchmarking
+CDPATH=:/mnt/nfs/Scritps/core:/mnt/nfs/Scritps/benchmarking:/mnt/nfs/Scritps/C:
 alias em='emacs -nw'
 export PATH
 export PYTHONPATH

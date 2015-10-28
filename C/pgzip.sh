@@ -11,12 +11,13 @@ for i in `seq -f "%02g" 1 $tiles`;
 do
     for k in `seq 1 $swaths`; 
     do
-	for j in `seq 2 $surface`;
+	for j in `seq 1 $surface`;
 	do
 	    for n in `seq 1 $cycles`;
 	    do
 		gzip "C${n}.1/s_${lane}_${j}${k}${i}.$extention" &
-		#echo "hello"#"C${n}.1/s_${lane}_${j}${k}${i}.$extention" 
+		pid=$!
+		#echo "hello"#"C${n}.1/s_${lane}_${j}${k}${i}.$extention"
 	    done
 	    wait $pid
 	done

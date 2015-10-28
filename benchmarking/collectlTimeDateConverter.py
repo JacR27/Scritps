@@ -1,16 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 19 15:55:03 2015
+#!/usr/bin/env python
 
-@author: jrayner
-"""
-
-"""
-Convert the datetime stamp collumns of collectl plotable output file to a single collumn and write to new file
-comandline inputs: shaired name of input and output file without extentions, input and output directories.
- 
-"""
-
+print("hello")
 from datetime import datetime
 from time import mktime
 import sys
