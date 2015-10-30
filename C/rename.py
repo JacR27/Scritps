@@ -2,8 +2,8 @@ import os
 
 def main():
     extention1 = "bcl.gz"
-    extention2 = "bcl.filtered.rm_11_34_42.gz"
-    extention3 = "bcl.gz.rrr_42.gz"
+    extention2 = "filtered.gz.r1.gz"
+    extention3 = "bcl.origonal.gz" 
     extention4 = "bcl.gz"
     for lane in range(5,6):
         for folder in range(1,303):

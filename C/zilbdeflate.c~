@@ -1,0 +1,7 @@
+#include <stdio>
+#include <zlib>
+
+void main()
+{
+  printf("hellow");
+}
