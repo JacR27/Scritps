@@ -300,7 +300,7 @@ void frr(void)
   //unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
   //unsigned char qualityMap[] = {0,14,14,14,34,34,34,42};
   //unsigned char qualityMap[] = {0,11,11,34,34,34,34,42};
-  unsigned char qualityMap[] = {0,8,8,23,23,23,37,37};
+  unsigned char qualityMap[] = {0,42,42,42,42,42,42,42};
   //unsigned char qualityMap[] = {0,1,1,1,2,2,2,3};
   //unsigned char qualityMap[] = {0,1,2,3,4,5,6,7};
   //unsigned char origonalQualities[] = {0,14,14,14,34,34,34,42};
@@ -397,7 +397,7 @@ void frr(void)
         splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
         outpath[0] = '\0';
         strcpy(outpath, path);
-        strcat(outpath, ".4bins.gz");
+        strcat(outpath, ".rm.gz");
         reducedQualities = malloc(nPostFiltering);
         reduceQualities(reducedQualities,origonalQualities,nPostFiltering,qualities,qualityMap,nQualites);
 	interleafed = interleafe(reducedQualities, bases, nPostFiltering);

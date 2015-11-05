@@ -7,61 +7,7 @@
 #include <zlib.h>
 #include <ctype.h>
 #include <unistd.h>
-
-
-
-
-/* parse, filter, demultiplex, reduse and split, bcl files */
-
-float score2prob(int score);
-
-void qualities2probs(unsigned char qualities[],float probs[],unsigned int len);
-
-int readLittleEInt(FILE *input);
-
-int getFilterClusters(unsigned char filename[]);
- 
-int readHeader(gzFile input);
-
-void printHist(unsigned long unique[]);
-
-void charHist(unsigned long unique[] , unsigned char array[], int len);
-
-void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename[]);
-
-void splitBaseCalls(unsigned char baseCalls[], unsigned int nBases, unsigned char bases[], unsigned char qualities[]);
-
-void filterBaseCalls(unsigned int nBases, unsigned char baseCalls[],unsigned char filter[],unsigned char filteredBaseCalls[]);
-
-unsigned char * join(unsigned int len, unsigned char array[],int bytesToJoin);
-
-void rejoin(unsigned char *reduced, unsigned int len, unsigned char qualities[],unsigned char bases[]);
-
-void demultiplex(unsigned int len, unsigned char baseCalls[]);
-
-void reduceQualities(unsigned char reducedQualities[], unsigned char origonalQualities[], unsigned int len, unsigned char qualities[], unsigned char qualityMap[], int nQualities);
-
-void printArray(unsigned char array[], unsigned int len, char *fileName, unsigned int header);
-
-unsigned char * interleafe(unsigned char array1[], unsigned char array2[], unsigned int len);
-
-void Firstoutputs(void);
-
-void analysis(void);
-
-void printArrayStdout(unsigned char array[], unsigned int len, unsigned int header);
-
-int getClusters(unsigned char filename[]);
-
-int getFilterPasses(unsigned char filename[]);
-
-int getFilterMask(unsigned char filter[], unsigned int len, unsigned char filename[]);
-
-void stuff(void);
-
-void frr(void);
-
-void printFileNames(void);
+#include "bcl.h"
 
 int mode, lvalue, tvalue, wvalue, svalue, cvalue, nFiles, cfvalue;
 int fflag, rflag, mflag, jflag, iflag, dflag;
@@ -164,91 +110,16 @@ main( int argc, char *argv[])
       for (index = optind; index < argc; index++)
 	printf ("Non-option argument %s\n", argv[index]);
       
-      if (mode == 5)
-	printBCL(printFile);
-      else if (mode == 6)
-        printcompressedBCL(printFile);
-      else
-	frr();
+      
+      frr();
       
       return 0;
     }
 
 
-void printBCL(char filename[])
-{
-  unsigned long uniqueQ[256] = {0};
-  unsigned long uniqueB[256] = {0};  
-  int nClusters;
-  int i;
-  char cluster[50] = {'\0'};
-  unsigned char * baseCalls, * qualities, *bases;
-  nClusters = getClusters(filename);
-  baseCalls = malloc(nClusters);
-  bases = malloc(nClusters);
-  qualities = malloc(nClusters);
-  readBaseCalls(nClusters, baseCalls, filename);
-  splitBaseCalls(baseCalls, nClusters, bases, qualities);
-  free(baseCalls);
-  charHist(uniqueQ, qualities,nClusters);
-  charHist(uniqueB, bases,nClusters);
-  printHist(uniqueQ);
-  printHist(uniqueB);
-  char con[] = {'A','C','G','T'};
-  for (i = 0; i < nClusters; ++i){
-    cluster[0] = '\0';
-    if ((i+5) % 5 == 0)
-	sprintf(cluster,"%010d\t",i);
-      
-    printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
-    //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
-    cluster[0] = '\0';
-  }
-  free(qualities);
-  free(bases);
-}
-     
-
-void printcompressedBCL(char filename[])
-{
-  unsigned long uniqueQ[256] = {0};
-  unsigned long uniqueB[256] = {0};  
-  int nClusters;
-  int i;
-  char cluster[50] = {'\0'};
-  unsigned char * baseCalls, * qualities, *bases;
-  nClusters = getClusters(filename);
-  baseCalls = malloc(nClusters);
-  bases = malloc(nClusters);
-  qualities = malloc(nClusters);
-  
-  readReducedBaseCalls(nClusters, baseCalls, filename);
-  splitBaseCalls(baseCalls, nClusters, bases, qualities);
-  free(baseCalls);
-  charHist(uniqueQ, qualities,nClusters);
-  charHist(uniqueB, bases,nClusters);
-  printHist(uniqueQ);
-  printHist(uniqueB);
-  char con[] = {'A','C','G','T'};
-  for (i = 0; i < nClusters; ++i){
-    cluster[0] = '\0';
-    if ((i+5) % 5 == 0)
-	sprintf(cluster,"%010d\t",i);
-      
-    printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
-    //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
-    cluster[0] = '\0';
-  }
-  free(qualities);
-  free(bases);
-}
-
-
 
 void frr(void)
 {
-
-
   #define MAXFOLDERNAMELEN 8
   printf("starting main\n");
   extern int cvalue;
@@ -300,7 +171,7 @@ void frr(void)
   //unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
   //unsigned char qualityMap[] = {0,14,14,14,34,34,34,42};
   //unsigned char qualityMap[] = {0,11,11,34,34,34,34,42};
-  unsigned char qualityMap[] = {0,8,8,23,23,23,37,37};
+  unsigned char qualityMap[] = {0,42,42,42,42,42,42,42};
   //unsigned char qualityMap[] = {0,1,1,1,2,2,2,3};
   //unsigned char qualityMap[] = {0,1,2,3,4,5,6,7};
   //unsigned char origonalQualities[] = {0,14,14,14,34,34,34,42};
@@ -397,7 +268,7 @@ void frr(void)
         splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
         outpath[0] = '\0';
         strcpy(outpath, path);
-        strcat(outpath, ".4bins.gz");
+        strcat(outpath, ".rm.gz");
         reducedQualities = malloc(nPostFiltering);
         reduceQualities(reducedQualities,origonalQualities,nPostFiltering,qualities,qualityMap,nQualites);
 	interleafed = interleafe(reducedQualities, bases, nPostFiltering);
@@ -501,15 +372,6 @@ void frr(void)
 
 
 
-int celingDev(int dividend, int devisor)
-{
-  return ((dividend / devisor) + (dividend % devisor != 0));
-}
-
-/* read 32 bit little eden int from file */
-int readHeader(gzFile input)
-{
-  #define BYTESININT32 4
   #define BITSINBYTE 8
 
   unsigned int nClusters;
