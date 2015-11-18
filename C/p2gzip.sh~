@@ -1,0 +1,12 @@
+#!/bin/bash
+cycles=150
+
+for n in `seq 3 $cycles`;
+do
+    gunzip C${n}.1/* &
+    pid=$!
+done
+wait $pid
+
+
+exit

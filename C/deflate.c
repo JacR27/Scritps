@@ -3,10 +3,11 @@
 #include <assert.h>
 #include <zlib.h>
 
+
 #define CHUNK 256000
 #  define SET_BINARY_MODE(file)
 
-int def(FILE *source, FILE *dest, int level)
+int def(FILE *source, FILE *dest, int level, int strat)
 {
   int ret, flush;
   unsigned have;
@@ -19,7 +20,7 @@ int def(FILE *source, FILE *dest, int level)
   strm.zalloc = Z_NULL;
   strm.zfree = Z_NULL;
   strm.opaque = Z_NULL;
-  ret = deflateInit2(&strm, level, Z_DEFLATED, windowBits, memLevel, Z_DEFAULT_STRATEGY);
+  ret = deflateInit2(&strm, level, Z_DEFLATED, windowBits, memLevel, strat);
   if (ret != Z_OK)
     return ret;
 
@@ -107,60 +108,3 @@ int inf(FILE *source, FILE *dest)
 
 
 
-/* report a zlib or i/o error */
-void zerr(int ret)
-{
-  fputs("zpipe: ", stderr);
-  switch (ret) {
-  case Z_ERRNO:
-    if (ferror(stdin))
-      fputs("error reading stdin\n", stderr);
-    if (ferror(stdout))
-      fputs("error writing stdout\n", stderr);
-    break;
-  case Z_STREAM_ERROR:
-    fputs("invalid compression level\n", stderr);
-    break;
-  case Z_DATA_ERROR:
-    fputs("invalid or incomplete deflate data\n", stderr);
-    break;
-  case Z_MEM_ERROR:
-    fputs("out of memory\n", stderr);
-    break;
-  case Z_VERSION_ERROR:
-    fputs("zlib version mismatch!\n", stderr);
-  }
-}
-
-
-
-int main(int argc, char **argv)
-{
-  int ret;
-
-  /* avoid end-of-line conversions */
-  SET_BINARY_MODE(stdin);
-  SET_BINARY_MODE(stdout);
-
-  /* do compression if no arguments */
-  if (argc == 1) {
-    ret = def(stdin, stdout, 9);
-    if (ret != Z_OK)
-      zerr(ret);
-    return ret;
-  }
-
-  /* do decompression if -d specified */
-  else if (argc == 2 && strcmp(argv[1], "-d") == 0) {
-    ret = inf(stdin, stdout);
-    if (ret != Z_OK)
-      zerr(ret);
-    return ret;
-  }
-
-  /* otherwise, report usage */
-  else {
-    fputs("zpipe usage: zpipe [-d] < source > dest\n", stderr);
-    return 1;
-  }
-}

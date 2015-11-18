@@ -1,0 +1,52 @@
+#!/bin/env python
+
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import argsparse
+import numpy as np
+
+
+
+
+
+def main():
+    print("hollow")
+
+
+def readCollectlData(name,Smoothing):
+
+    MINUTES = 60
+    RESULTS_DIR='args.resultdir'
+    InputFileExtention = ".tsv"
+    TITLE_ROW_NUMBER=1
+
+    titleRow = open(RESULTS_DIR + name + InputFileExtention,"r")
+    columnLables = titleRow.readline().split() # read colmn headding in to array
+    titleRow.close()
+
+    data = (np.loadtxt(RESULTS_DIR+name+ InputFileExtention,skiprows=TITLE_ROW_NUMBER)) #read system into numpy array
+    data[:,0] = data[:,0]/MINUTES
+    dataTemp = np.array(data[:,1:])
+    for d in range(np.size(data,axis=0)):
+        data[d,1:] = np.mean(dataTemp[max([0,d-Smoothing]):d+1,:],axis=0)
+
+
+    subprocesses = open(RESULTS_DIR + name,"r") # open file containt subprocesses
+    rawSubprocess= np.array([line.strip().split() for line in subprocesses])
+    subprocesses.close()
+    subprocessTimes = np.array(rawSubprocess[:,0],dtype=np.float)/MINUTES
+    NumberOfSubprocesses=len(subprocessTimes)
+    subprocessNames = np.array(rawSubprocess[:,1])
+    clumaltiveTimes = []
+    for i in range(NumberOfSubprocesses):
+        clumaltiveTimes.append(np.sum(subprocessTimes[0:i+1])) #generate clumaltive time for ploting ticks
+    clumaltiveTimes=np.array(clumaltiveTimes)
+
+    return [columnLables, data , subprocessTimes, subprocessNames, clumaltiveTimes]
+
+    
+
+
+
+main()

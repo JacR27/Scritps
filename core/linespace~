@@ -1,0 +1,13 @@
+#!/bin/env python
+import argparse
+import sys
+parser = argparse.ArgumentParser()
+parser.add_argument("-n","--number",help="number of blank lines",type=int,default=1, nargs=1)
+parser.parse_args()
+
+
+for line in sys.stdin.readlines():
+    print(line.strip())
+    for i in range(int(number)):
+        print
+    

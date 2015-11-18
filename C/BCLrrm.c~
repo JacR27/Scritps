@@ -65,7 +65,7 @@ void printFileNames(void);
 
 int mode, lvalue, tvalue, wvalue, svalue, cvalue, nFiles, cfvalue;
 int fflag, rflag, mflag, jflag, iflag, dflag;
-char bclFormat[100];
+char bclFormat[30];
 char printFile[50];
 main( int argc, char *argv[])
 
@@ -247,6 +247,8 @@ void printcompressedBCL(char filename[])
 
 void frr(void)
 {
+
+
   #define MAXFOLDERNAMELEN 8
   printf("starting main\n");
   extern int cvalue;
@@ -264,7 +266,7 @@ void frr(void)
 
 
 
-#define MAXFILENAMELEN 150
+#define MAXFILENAMELEN 50
 
 
   int i, j, k , n;
@@ -294,10 +296,16 @@ void frr(void)
   
 
   int nQualites = 8;
-
-  unsigned char qualityMap[] = {0,1,1,2,2,3,3,3};
-  //unsigned char qualityMap[] = {0,8,8,23,23,37,37,37};
+  //unsigned char qualityMap[] =      {0,7,7,7,7,7,11,11,11,11,11,11,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42};
+  //unsigned char qualityMap[] =        {0,11,11,11,11,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,22,22,22,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37};
+  //unsigned char qualityMap[] = {0,14,14,14,34,34,34,42};
+  //unsigned char qualityMap[] = {0,11,11,34,34,34,34,42};
+  unsigned char qualityMap[] = {0,42,42,42,42,42,42,42};
+  //unsigned char qualityMap[] = {0,1,1,1,2,2,2,3};
+  //unsigned char qualityMap[] = {0,1,2,3,4,5,6,7};
+  //unsigned char origonalQualities[] = {0,14,14,14,34,34,34,42};
   unsigned char origonalQualities[] = {0,7,11,22,27,32,37,42};
+  //unsigned char origonalQualities[] = {0,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41};
   printf("nQualities: %d\n",sizeof(origonalQualities));
 
   
@@ -360,7 +368,7 @@ void frr(void)
      
       unsigned char * baseCalls, *filteredBaseCalls, *bases, *qualities, *reducedQualities, *rejoined, *interleafed, *joined, *postFilteringBaseCalls;
       char path[MAXFILENAMELEN+MAXFOLDERNAMELEN];
-      char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN];
+      char outpath[MAXFILENAMELEN+MAXFOLDERNAMELEN+10];
       path[0] = '\0';
       strcpy(path, folderNames[ci]);
       strcat(path, bclNames[fi]);
@@ -389,7 +397,7 @@ void frr(void)
         splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);
         outpath[0] = '\0';
         strcpy(outpath, path);
-        strcat(outpath, ".packed.gz");
+        strcat(outpath, ".rm.gz");
         reducedQualities = malloc(nPostFiltering);
         reduceQualities(reducedQualities,origonalQualities,nPostFiltering,qualities,qualityMap,nQualites);
 	interleafed = interleafe(reducedQualities, bases, nPostFiltering);
@@ -401,16 +409,6 @@ void frr(void)
         free(qualities);
         free(reducedQualities);
       }
-
-      if(jflag){
-	outpath[0] = '\0';
-        strcpy(outpath, path);
-        strcat(outpath, ".packed.gz");	
-	joined = join(nPostFiltering, postFilteringBaseCalls, 2);
-	printArray(joined, celingDev(nPostFiltering,2),outpath,nPostFiltering);
-        free(joined);
-      }
-
      
       if (rflag){
 	bases = malloc(nPostFiltering);
@@ -418,7 +416,7 @@ void frr(void)
 	splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);    
         outpath[0] = '\0';
 	strcpy(outpath, path);	
-        strcat(outpath, ".4bins.remapped.gz");
+        strcat(outpath, ".rrr_42.gz");
 	reducedQualities = malloc(nPostFiltering);
 	reduceQualities(reducedQualities,origonalQualities, nPostFiltering, qualities, qualityMap,nQualites);
 	rejoined = malloc(nPostFiltering);
@@ -693,7 +691,7 @@ void rejoin(unsigned char *reduced, unsigned int len, unsigned char qualities[],
 {
   int i;
   gzFile outHandle;
-  outHandle = gzopen(fileName,"wb6h");
+  outHandle = gzopen(fileName,"w");
   gzwrite(outHandle, &header,sizeof(header));
   gzwrite(outHandle, array, len);
   gzclose(outHandle);

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-print("hello")
 from datetime import datetime
 from time import mktime
 import sys
@@ -24,15 +23,11 @@ def main():
             titleRow = line[LENGTH_JUNK_FROM_START_OF_TITLE:]
         else:
             data.append(line.strip()) 
-   
     outputTSV.write(titleRow)                                            
-
     startTime = datetimestr2seconds(data[0][0:17])                        
     for i in data:
         time = datetimestr2seconds(i[0:LENGTH_OF_DATE_AND_TIME])-startTime
         outputTSV.write(str(time) + i[LENGTH_OF_DATE_AND_TIME:] + "\n") #write date to outputfile
-    
-
     inputTSV.close()
     outputTSV.close()
     

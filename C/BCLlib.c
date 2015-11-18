@@ -62,7 +62,6 @@ void readBaseCalls(unsigned int nBases, unsigned char baseCalls[], char filename
   nClusters = readHeader(inputFile);
   gzread(inputFile, baseCalls, nBases);  
   gzclose(inputFile);
-  nClusters =0;
   printf("filename: %s, nClusters %d\n",filename,nClusters);
 }
 
@@ -136,7 +135,7 @@ void printHist(unsigned long unique[])
   tot = 0;
   for (i=0;i<MAXUNIQUE;i++){
     if (c = unique[i]){
-      printf("element: %lu, count %lu \n", i, c);
+      printf("number: %lu, count %lu \n", i, c);
       tot +=c;  
     }
   }

@@ -1,7 +1,0 @@
-import os
-totalsize = 0
-for line in os.stdin.readlines():
-    fileInfo = line.strip.split();
-    size = fileInfo[4]
-    total += size
-print(total)

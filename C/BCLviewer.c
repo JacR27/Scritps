@@ -78,18 +78,56 @@ void printcompressedBCL(char filename[])
 }
 
 
+void printDenltiplexedBCL(char filename[],int readlen)
+{
+  unsigned long uniqueQ[256] = {0};
+  unsigned long uniqueB[256] = {0};
+  int nClusters;
+  int i;
+  char cluster[50] = {'\0'};
+  unsigned char * baseCalls, * qualities, *bases;
+  nClusters = getClusters(filename)*readlen;
+  baseCalls = malloc(nClusters);
+  bases = malloc(nClusters);
+  qualities = malloc(nClusters);
+  readBaseCalls(nClusters, baseCalls, filename);
+  splitBaseCalls(baseCalls, nClusters, bases, qualities);
+  free(baseCalls);
+  charHist(uniqueQ, qualities,nClusters);
+  charHist(uniqueB, bases,nClusters);
+  printHist(uniqueQ);
+  printHist(uniqueB);
+  char con[] = {'A','C','G','T'};
+  for (i = 0; i < nClusters; ++i){
+    cluster[0] = '\0';
+    if ((i+5) % 5 == 0)
+      sprintf(cluster,"%010d\t",i);
+
+    printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
+    //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
+    cluster[0] = '\0';
+  }
+  free(qualities);
+  free(bases);
+}
+
+
+
 
 main( int argc, char *argv[])
 
     {
       extern int rflag;
       rflag = 0; // reduceingResolution
+      int demultiplexed = 1;
       int index;
       int c;
       opterr = 0;
-      while ((c = getopt (argc, argv, "p:r")) != -1)
+      while ((c = getopt (argc, argv, "p:rd:")) != -1)
 	switch (c)
 	  {
+	  case 'd':
+	    demultiplexed = atoi(optarg);
 	  case 'r':
 	    rflag = 1;
 	    break;
@@ -116,6 +154,8 @@ main( int argc, char *argv[])
       
       if (!rflag)
 	printBCL(printFile);
+      else if (demultiplexed != 1)
+	printDenltiplexedBCL(printFile, demultiplexed);
       else
       	printcompressedBCL(printFile);
       return 0;

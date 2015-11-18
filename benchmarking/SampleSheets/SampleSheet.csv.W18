@@ -1,7 +1,0 @@
-[Header],,,,,,
-Date, 06/05/2014,,,,,
-Workflow, Resequencing,,,,,
-[Settings],,,,,,
-[Data],,,,,,
-SampleID,SampleName, GenomeFolder, RunFolder, Lanes, Index, Index2
-12878_E6, 12878_E6, Homo_sapiens/UCSC/hg19/Sequence/WholeGenomeFasta, /mnt/141128_HSX177_0082_BH00UABBXX/,4,,
