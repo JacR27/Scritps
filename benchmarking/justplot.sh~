@@ -1,0 +1,29 @@
+#!/bin/bash
+PATH=$PATH:/mnt/nfs/Scritps/benchmarking
+export PATH
+
+analysisdir=./
+
+
+if [ $# -eq 0 ]; then usage; exit 1; fi
+while getopts "d:" argument; do
+    case $argument in
+        d ) processName=$OPTARG;;
+
+collectl -p $analysisdir${processName}collectl* -P -f ${analysisdir}collectlplot
+
+gzip -d ${analysisdir}collectlplot*
+
+mv ${analysisdir}collectlplot* ${analysisdir}${processName}.dat
+
+collectlTimeDateConverter.py "$processName" "$analysisdir" "$analysisdir"
+
+grep "Elapsed time" ${analysisdir}WorkflowLog.txt | extractIsisSteps.py > ${analysisdir}${processName}.stp
+
+cp ${analysisdir}${processName}.tsv ${analysisdir}collectl.tsv
+
+gnuisaac.sh ${analysisdir}
+
+rm ${analysisdir}collectl.tsv
+
+exit

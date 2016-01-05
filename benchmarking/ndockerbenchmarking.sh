@@ -1,7 +1,7 @@
 #!/bin/bash
 PATH=$PATH:/mnt/nfs/Scritps/benchmarking
 export PATH
-workingdir=/mnt/raid/150509_HSX213_0053_AH5WWCCCXX/
+
 usage()
 {
 cat <<EOF
@@ -12,18 +12,20 @@ ISIS: $ISIS
 EOF
 }
 
-
-
-system="S4"
+system=`hostname`
 con=1
 #get option
 if [ $# -eq 0 ]; then usage; exit 1; fi
-while getopts "r:w:p:c" argument; do
+while getopts "r:w:p:d:s:m:n:c" argument; do
     case $argument in
+	d ) workingdir=$OPTARG;;
         r ) run=$OPTARG;;
 	w ) workflow=$OPTARG;;
 	p ) processor=$OPTARG;;
 	c ) con=0;;
+	s ) system=$OPTARG;;
+	m ) mem=$OPTARG;;
+	n ) cpumem=$OPTARG;;
         * ) usage
             exit 1;;
     esac
@@ -41,9 +43,26 @@ if [[ -z $workflow ]]; then
 fi
 
 if [[ -z $processor ]]; then
-    echo "ERROR: Run (-p) required!"
+    echo "ERROR: processor (-p) required!"
     exit 1
 fi
+if [[ -z $mem ]]; then
+    echo "ERROR: mem (-m) required!"
+    exit 1
+fi
+
+if [[ -z $cpumem ]]; then
+    echo "ERROR: cpumem (-n) required!"
+    exit 1
+else
+    optmemset="--cpuset-mems=${cpumem}"
+fi
+
+if [[ -z $workingdir ]]; then
+    echo "ERROR: workingdir (-d) required!"
+    exit 1
+fi
+
 
 processName=${system}${workflow}${run}
 
@@ -76,8 +95,7 @@ echo "started monerating"
 
 echo "starting isis"
 
-/usr/bin/time -v docker run --privileged=true --cpuset-cpus="$processor" -v /illumina:/illumina -v /mnt/raid:/mnt/raid -v /mnt/nfs/Scritps:/mnt/nfs/Scritps ouruser/centos:plusgnuplot /illumina/development/Isis/2.6.53.8/Isis -r $workingdir -a ${analysisdir} > ${analysisdir}${processName}.stdout
-
+/usr/bin/time -v docker run --privileged=true --cpuset-cpus="$processor" -m $mem -t $optmemset -v /illumina:/illumina -v /mnt/raid:/mnt/raid -v /mnt/ssd:/mnt/ssd -v /mnt/nfs:/mnt/nfs -v /mnt/nfs1:/mnt/nfs1 -v /mnt/nfs/Scritps:/mnt/nfs/Scritps ouruser/cenots:plusgnuplot /illumina/development/Isis/2.6.53.15/Isis -r $workingdir -a ${analysisdir}> ${analysisdir}${processName}.stdout
 
 echo a"Isis exit status: $?"
 echo "killing monerating"
@@ -91,6 +109,8 @@ gzip -d ${analysisdir}collectlplot*
 mv ${analysisdir}collectlplot* ${analysisdir}${processName}.dat
 
 collectlTimeDateConverter.py "$processName" "$analysisdir" "$analysisdir"
+
+grep "Elapsed time" ${analysisdir}WorkflowLog.txt | extractIsisSteps.py > ${analysisdir}${processName}.stp
 
 cp ${analysisdir}${processName}.tsv ${analysisdir}collectl.tsv
 
