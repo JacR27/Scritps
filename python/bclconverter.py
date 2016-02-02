@@ -24,8 +24,6 @@ def filterstats(SERFACES,SWATHS,TILES):
 
 
 def bclConverter(args):    
-
-    
     def readBCL(foldername, filename, fileExtention):
         file = open(foldername+filename+fileExtention,"rb")
         hbytes = file.read(4) # remove first 4 bytes

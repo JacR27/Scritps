@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>MOSH</short>
+  <description>Mosh (mosh.mit.edu) is a free replacement for SSH that allows roaming and supports intermittent connectivity.</description>
+  <port protocol="udp" port="60001"/>
+  <port protocol="udp" port="60002"/>
+  <port protocol="udp" port="60003"/>
+  <port protocol="udp" port="60004"/>
+  <port protocol="udp" port="60005"/>
+  <port protocol="udp" port="60006"/>
+  <port protocol="udp" port="60007"/>
+  <port protocol="udp" port="60008"/>
+  <port protocol="udp" port="60009"/>
+</service>

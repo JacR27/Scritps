@@ -1,0 +1,39 @@
+import sys
+
+order = {"SM":1, "AS":2, "RG":3, "NM":4, "BC":5, "OC":6, "SA":7}
+
+def sortTags(recored):
+    record = recored.strip().split()
+    return "\t".join(record[:11]+sorted(record[11:], key=keysort))
+
+def keysort(tag):
+    return order[tag[:2]]
+
+def header(line):
+    if "scramble" not in line:
+        print(line.strip())
+
+def printheader(header):
+    for i in header:
+        print(i)
+
+def headsort(line):
+    return line[:3]
+
+def main():
+    header = []
+    isfirstrecord = 1
+    for line in sys.stdin:
+        if line.startswith("@"):
+            if "scramble" not in line:
+                header.append(line.strip())
+        elif isfirstrecord:
+            isfirstrecord = 0
+            printheader(sorted(header,key=headsort))
+            print(sortTags(line))
+        else:
+            print(sortTags(line))
+
+
+if __name__=='__main__':
+    main()

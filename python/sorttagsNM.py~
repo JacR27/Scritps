@@ -1,0 +1,12 @@
+import sys
+
+
+def main():
+    for line in sys.stdin.readline():
+        line = line.stip().split()
+        outline  = line[0:12]
+        tags = [i for i in line[12:] if not i.startswith("NM")]
+        print(outline.extend(tags))
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,16 @@
+import numpy as np
+import os.path
+
+
+def main():
+    pass
+
+
+def readbytes(filename):
+    with open(filename) as fh:
+        dt = np.dtype('<i4')
+        nClusters = np.fromfile(fh,dtype=dt,count=1)
+        print(nClusters)
+
+readbytes('somefile')
+        

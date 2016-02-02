@@ -29,6 +29,7 @@ void printBCL(char filename[])
   printHist(uniqueQ);
   printHist(uniqueB);
   char con[] = {'A','C','G','T'};
+  if (0){
   for (i = 0; i < nClusters; ++i){
     cluster[0] = '\0';
     if ((i+5) % 5 == 0)
@@ -37,6 +38,7 @@ void printBCL(char filename[])
     printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
     //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
     cluster[0] = '\0';
+  }
   }
   free(qualities);
   free(bases);
@@ -67,10 +69,10 @@ void printcompressedBCL(char filename[])
   for (i = 0; i < nClusters; ++i){
     cluster[0] = '\0';
     if ((i+5) % 5 == 0)
-	sprintf(cluster,"%010d\t",i);
+  	sprintf(cluster,"%010d\t",i);
       
     printf("%s%c-%d\t%s", cluster ,con[bases[i]], qualities[i], ((i+1) % 5) ? "" : "\n");
-    //printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
+    printf("%d%c-%d\t%s",(i % 5) ? i : i , con[bases[i]], qualities[i], (i % 5) ? "" : "\n");
     cluster[0] = '\0';
   }
   free(qualities);

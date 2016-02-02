@@ -1,0 +1,11 @@
+import numpy as np
+
+
+def main(bamfile):
+    with open(bamfile) as bh:
+        magic = bh.read(4)
+        print(type(magic),magic)
+
+
+if __name__ == '__main__':
+    main()

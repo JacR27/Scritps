@@ -1,0 +1,18 @@
+import subprocess as subp
+import sys
+
+def getoptions():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument('--in1', dest='bam1', action='store', required=True, help='first bam')
+    #arg_parser.add_argument('--in2', dest='bam1', action='store', required=True, help='second bam')    
+    return arg_parser.parse_args()
+
+
+def samtoolsView(bam):
+    command = ['mnt/nfs/cramming/samtools/bin/samtools', 'view']
+    with open(bam) as fh:
+        job = subp.Popen(command,stdin=fh,stdout=subp.PIPE,univeral_newlines=True)
+
+def main():
+    args = getoptions()
+    samtoolsView(args.bam1)

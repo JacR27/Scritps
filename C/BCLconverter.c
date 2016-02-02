@@ -74,10 +74,10 @@ main( int argc, char *argv[])
       extern char bclFormat[];
       
       lvalue = 1;
-      tvalue = 24;
-      wvalue = 2;
-      svalue = 2;
-      cvalue = 302;
+      tvalue = 310;
+      wvalue = 1;
+      svalue = 1;
+      cvalue = 1;
       cfvalue = 1;
       mode = 0;
       strcpy(bclFormat, "bcl");
@@ -259,11 +259,12 @@ void frr(void)
   int t;
   for (f = cfvalue, t = 0; f <= cvalue; ++f, ++t){
     printf("%d\n",f);
-    sprintf(folderNames[t],"C%d.1/",f);
+    //sprintf(folderNames[t],"C%d.1/",f);
+    sprintf(folderNames[t],"./");
   }
 
 
-
+  printf("got folders\n");
 #define MAXFILENAMELEN 150
 
 
@@ -280,30 +281,34 @@ void frr(void)
     for (j = 1; j <= wvalue; ++j){
       for (k = 1; k <= tvalue; ++k){
 	if (fflag)
-	  snprintf(filterNames[n],MAXFILENAMELEN,"s_%d_%d%d%02d.%s",lvalue,i,j,k,"filter");
-	snprintf(bclNames[n],MAXFILENAMELEN,"s_%d_%d%d%02d.%s",lvalue,i,j,k,bclFormat);
+	  snprintf(filterNames[n],MAXFILENAMELEN,"s_%d.%s",lvalue,"filter");
+	  //snprintf(filterNames[n],MAXFILENAMELEN,"s_%d_%d%d%02d.%s",lvalue,i,j,k,"filter");
+	//snprintf(bclNames[n],MAXFILENAMELEN,"s_%d_%d%d%02d.%s",lvalue,i,j,k,bclFormat);
+	snprintf(bclNames[n],MAXFILENAMELEN,"%04d.%s",k,bclFormat);
+	//snprintf(bclNames[n],MAXFILENAMELEN,"0d.%s",k,bclFormat);
 	n++;
       }
     }
   }
   
-  printf("got file names");
+  //printf("got file names\n");
 
 
 
   
 
-  int nQualites = 51;
+  int nQualites = 8;
 
   //unsigned char qualityMap[] = {0,1,1,2,2,3,3,3};
-  //unsigned char qualityMap[] = {0,8,8,23,23,37,37,37};
+  unsigned char qualityMap[] = {0,8,8,23,23,37,37,37};
+  //unsigned char qualityMap[] = {0,30,30,30,30,30,30,30};
   //unsigned char qualityMap[] = {0,0,15,25,25,35,35,35};
   //unsigned char qualityMap[] = {0,35,35,35,35,35,35,35};
   //unsigned char qualityMap[] = {0,11,11,11,32,32,32,42};
-  //unsigned char origonalQualities[] = {0,7,11,22,27,32,37,42};
+  unsigned char origonalQualities[] = {0,7,14,22,27,32,37,42};
   //unsigned char qualityMap[] = {0,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,25,25,25,25,25,25,25,25,25,25,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35,35};
-  unsigned char qualityMap[] = {0,7,7,7,7,7,7,7,7,7,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42,42,42,42,42,42,42,42};
-  unsigned char origonalQualities[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50};
+  //unsigned char qualityMap[] = {0,7,7,7,7,7,7,7,7,7,11,11,11,11,11,11,11,22,22,22,22,22,22,22,22,27,27,27,27,27,32,32,32,32,32,37,37,37,37,37,42,42,42,42,42,42,42,42,42,42,42};
+  //unsigned char origonalQualities[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50};
   printf("nQualities: %d\n",sizeof(origonalQualities));
 
   
@@ -424,7 +429,7 @@ void frr(void)
 	splitBaseCalls(postFilteringBaseCalls, nPostFiltering, bases, qualities);    
         outpath[0] = '\0';
 	strcpy(outpath, path);	
-        strcat(outpath, ".4bins.remapped.gz");
+        strcat(outpath, ".remapped.gz");
 	reducedQualities = malloc(nPostFiltering);
 	reduceQualities(reducedQualities,origonalQualities, nPostFiltering, qualities, qualityMap,nQualites);
 	rejoined = malloc(nPostFiltering);
