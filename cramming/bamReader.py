@@ -1,4 +1,4 @@
-#import numpy as np
+import numpy as np
 import struct as st
 import sys
 import time
@@ -118,7 +118,6 @@ def main():
     
     # main loop for bam records, return when run out of data.
     while True:
-    #for i in range(1):
         block_size = sys.stdin.read(4)
         if not block_size:
             return
@@ -132,6 +131,7 @@ def main():
         block_size = st.pack('<i',(block_size_no_tags)+tagSize)
 
         printRecord(sys.stdout, block_size, refID_pos, bin_mq_nl, flag_nc, l_seq, next_refID_next_pos_tlen_read_name_cigar_seq_qual, tags)
+
 
 
 
