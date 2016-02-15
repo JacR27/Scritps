@@ -114,11 +114,11 @@ def main():
     #read, filter sort and print header
     magic, l_text, text, n_refs, refs = readBamHeader(sys.stdin)
     text, l_text = processHeader(text)
-    printheader(sys.stdout, magic, l_text, text,n_refs, refs)
+    #printheader(sys.stdout, magic, l_text, text,n_refs, refs)
     
     # main loop for bam records, return when run out of data.
-    while True:
-    #for i in range(1):
+    #while False:
+    for i in range(1):
         block_size = sys.stdin.read(4)
         if not block_size:
             return
